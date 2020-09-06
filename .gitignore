@@ -545,3 +545,4 @@ MigrationBackup/
 
 # End of https://www.toptal.com/developers/gitignore/api/go,c,c++,jetbrains+all,visualstudiocode,visualstudio
 materials
+*.zip
