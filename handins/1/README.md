@@ -20,5 +20,5 @@ Each peer sends all received messages, that are unique (= has not been shared by
  For that reason just one thread can access the storage.
  This results in the atomicity of the operation "Distribute message if not seen previously".
  
-If all peers are connected, then they eventually receive set,
- but not necessarily in the same order.  
+If all peers are connected, then they eventually receive the same set of messages
+ but not necessarily in the same order.
