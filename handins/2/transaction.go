@@ -1,4 +1,4 @@
-package account
+package main
 
 type Transaction struct {
 	ID     string
