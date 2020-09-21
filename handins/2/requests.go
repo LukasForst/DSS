@@ -54,5 +54,4 @@ func (l *Ledger) DoTransaction(t *Transaction) {
 
 	l.Accounts[t.From] -= t.Amount
 	l.Accounts[t.To] += t.Amount
-
 }
