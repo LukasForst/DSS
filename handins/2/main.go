@@ -44,16 +44,19 @@ func OnNewConnection(conn net.Conn, model *Model) {
 			}
 		case "transaction":
 			var transaction Transaction
+			var ledger Ledger
 			if err := json.Unmarshal(payload, &transaction); err != nil {
 				log.Fatal("It was not possible to parse transaction.")
 			}
-			OnTransactionReceived(transaction, model)
+			OnTransactionReceived(transaction, ledger, model)
 		}
 	}
 }
 
 func OnTransactionReceived(transaction Transaction, ledger Ledger, model *Model) {
 	//make transaction, broadcast Transaction object, update local Ledger object
+
+	ledger.Transaction(transaction)
 
 }
 
