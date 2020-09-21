@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -128,9 +129,9 @@ func (m *Model) BroadCastTransaction(transaction Transaction) {
 
 	for peerAddress, connection := range m.connections {
 		//TODO: broadcast Transaction object
-		
-		_, err := connection.Write([]byte("Transaction with ID " + transaction.ID + "made from " 
-		+ transaction.From + "to " + transaction.To + "with an amount of " + transaction.Amount))
+
+		_, err := connection.Write([]byte("Transaction with ID " + transaction.ID + "made from " +
+			transaction.From + "to " + transaction.To + "with an amount of " + strconv.Itoa(transaction.Amount)))
 		if err != nil {
 			PrintStatus("It was not possible to broadcast the transaction to " + peerAddress + " -> " + err.Error())
 		}
