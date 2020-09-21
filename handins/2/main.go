@@ -49,7 +49,8 @@ func OnNewConnection(conn net.Conn, model *Model) {
 	}
 }
 
-func OnTransactionReceived(transaction Transaction, model *Model) {
+func OnTransactionReceived(transaction Transaction, ledger Ledger, model *Model) {
+	//make transaction, broadcast Transaction object, update local Ledger object
 
 }
 
