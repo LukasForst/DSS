@@ -9,58 +9,6 @@ import (
 	"strings"
 )
 
-func OnNewConnection(conn net.Conn, model *Model) {
-	model.AddConn(conn)
-	defer model.RemoveAndCloseConn(conn)
-	for {
-		decoder := json.NewDecoder(conn)
-
-		var objmap map[string]json.RawMessage
-		if err := decoder.Decode(&objmap); err != nil {
-			PrintStatus("Connection dropped - " + err.Error())
-			break
-		}
-
-		mType, payload := MessageTypeAndRest(objmap)
-
-		switch mType {
-		// just send my own peers
-		//not propagated in the network, no need to check for uniqueness
-		case "peers-request":
-			PrintStatus("Peers request received!")
-			peers := MakePeersList(model.GetPeersList())
-			if err := json.NewEncoder(conn).Encode(peers); err != nil {
-				log.Println("It was not possible to send data.")
-			}
-		// notification about presence
-		// need to check uniqueness, propagated on the network
-		case "present":
-			PrintStatus("Present status received from: " + UnmarshalString(payload))
-			added := model.AddNetworkPeer(UnmarshalString(payload))
-			if added {
-				model.PrintPeers()
-				// broadcast the presence further in the network
-				model.BroadCastJson(objmap)
-			}
-		case "transaction":
-			var transaction Transaction
-			var ledger Ledger
-			if err := json.Unmarshal(payload, &transaction); err != nil {
-				log.Fatal("It was not possible to parse transaction.")
-			}
-			OnTransactionReceived(transaction, ledger, model)
-		}
-	}
-}
-
-func OnTransactionReceived(transaction Transaction, ledger Ledger, model *Model) {
-	//TODO: make transaction, broadcast Transaction object, update local Ledger object
-
-	//ledger.DoTransaction(transaction)
-	model.BroadCastTransaction(transaction)
-
-}
-
 func ConnectToNeighborhood(model *Model) {
 	// connect to the peers in the neighborhood
 	peers := model.SelectTopNAfterMe(10)
@@ -104,15 +52,14 @@ func RunServer(model *Model) {
 	}
 }
 
+// pull data from the remote peer
 func InitialConnection(conn net.Conn, model *Model) {
 	enc := json.NewEncoder(conn)
 	dec := json.NewDecoder(conn)
-	PrintStatus("Asking for the peers.")
 	// ask for peers
 	if err := enc.Encode(MakePeersRequest()); err != nil {
 		log.Fatal("It was not possible to connect to the first peer! ->" + err.Error())
 	}
-	PrintStatus("Receiving peers.")
 	// receive peers
 	var peers PeersList
 	if err := dec.Decode(&peers); err != nil {
