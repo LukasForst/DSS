@@ -122,6 +122,22 @@ func (m *Model) BroadCastJson(v interface{}) {
 	m.BroadCastBytes(bytes)
 }
 
+func (m *Model) BroadCastTransaction(transaction Transaction) {
+	m.cMutex.RLock()
+	defer m.cMutex.RUnlock()
+
+	for peerAddress, connection := range m.connections {
+		//TODO: broadcast Transaction object
+		
+		_, err := connection.Write([]byte("Transaction with ID " + transaction.ID + "made from " 
+		+ transaction.From + "to " + transaction.To + "with an amount of " + transaction.Amount))
+		if err != nil {
+			PrintStatus("It was not possible to broadcast the transaction to " + peerAddress + " -> " + err.Error())
+		}
+	}
+
+}
+
 func (m *Model) PrintPeers() {
 	PrintStatus("Peers: " + strings.Join(m.GetPeersList(), ", "))
 }

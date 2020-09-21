@@ -48,7 +48,7 @@ type Transaction struct {
 	Amount int
 }
 
-func (l *Ledger) Transaction(t *Transaction) {
+func (l *Ledger) DoTransaction(t *Transaction) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 
