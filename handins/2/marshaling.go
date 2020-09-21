@@ -5,14 +5,6 @@ import (
 	"log"
 )
 
-func EncodeGenericMap(m map[string]json.RawMessage) []byte {
-	data, err := json.Marshal(m)
-	if err != nil {
-		log.Fatal("It was not possible to encode generic map.")
-	}
-	return data
-}
-
 func UnmarshalString(m json.RawMessage) string {
 	var str string
 	if err := json.Unmarshal(m, &str); err != nil {
@@ -22,11 +14,8 @@ func UnmarshalString(m json.RawMessage) string {
 }
 
 func MessageTypeAndRest(objmap map[string]json.RawMessage) (string, json.RawMessage) {
-	value, ok := objmap["Type"]
-	if !ok {
-		log.Fatal("No type present!")
-	}
-	messageType := UnmarshalString(value)
-	value, _ = objmap["Data"]
-	return messageType, value
+	typeJ, _ := objmap["Type"]
+	messageType := UnmarshalString(typeJ)
+	dataJ, _ := objmap["Data"]
+	return messageType, dataJ
 }
