@@ -1,5 +1,9 @@
 package main
 
+import (
+	"sync"
+)
+
 type Present struct {
 	Type string
 	Data string
@@ -24,6 +28,11 @@ type PeersRequest struct {
 
 func MakePeersRequest() PeersRequest {
 	return PeersRequest{Type: "peers-request"}
+}
+
+type Ledger struct {
+	Accounts map[string]int
+	lock     sync.Mutex
 }
 
 type Transaction struct {
