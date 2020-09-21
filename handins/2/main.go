@@ -44,9 +44,13 @@ func OnNewConnection(conn net.Conn, model *Model) {
 			if err := json.Unmarshal(payload, &transaction); err != nil {
 				log.Fatal("It was not possible to parse transaction.")
 			}
-			// TODO perform the transaction
+			OnTransactionReceived(transaction, model)
 		}
 	}
+}
+
+func OnTransactionReceived(transaction Transaction, model *Model) {
+
 }
 
 func ConnectToNeighborhood(model *Model) {
