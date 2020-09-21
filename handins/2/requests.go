@@ -25,3 +25,6 @@ type PeersRequest struct {
 func MakePeersRequest() PeersRequest {
 	return PeersRequest{Type: "peers-request"}
 }
+
+type Transaction struct {
+}

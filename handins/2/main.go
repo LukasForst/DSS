@@ -27,17 +27,24 @@ func OnNewConnection(conn net.Conn, model *Model) {
 		switch mType {
 		// just send my own peers
 		case "peers-request":
+			PrintStatus("Peers request received!")
 			peers := MakePeersList(model.GetPeersList())
 			if err := json.NewEncoder(conn).Encode(peers); err != nil {
 				log.Println("It was not possible to send data.")
 			}
 		// notification about presence
 		case "present":
+			PrintStatus("Present status received from: " + UnmarshalString(payload))
 			model.AddNetworkPeer(UnmarshalString(payload))
 			// broadcast the presence further in the network
-			model.BroadCastJson(objmap)
+			// TODO enable broadcast
+			//model.BroadCastJson(objmap)
 		case "transaction":
-			// TODO work with transaction
+			var transaction Transaction
+			if err := json.Unmarshal(payload, &transaction); err != nil {
+				log.Fatal("It was not possible to parse transaction.")
+			}
+			// TODO perform the transaction
 		}
 	}
 }
@@ -90,16 +97,17 @@ func InitialConnection(conn net.Conn, model *Model) {
 
 	enc := json.NewEncoder(conn)
 	dec := json.NewDecoder(conn)
+	PrintStatus("Asking for the peers.")
 	// ask for peers
 	if err := enc.Encode(MakePeersRequest()); err != nil {
 		log.Fatal("It was not possible to connect to the first peer! ->" + err.Error())
 	}
+	PrintStatus("Receiving peers.")
 	// receive peers
 	var peers PeersList
 	if err := dec.Decode(&peers); err != nil {
 		log.Fatal("It was not possible to connect to the first peer! ->" + err.Error())
 	}
-
 	// register the peers in the application
 	model.AddNetworkPeers(peers.Data)
 	PrintStatus("Peers list registered.")

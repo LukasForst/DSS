@@ -77,8 +77,6 @@ func (m *Model) SelectTopNAfterMe(n int) []string {
 	for i := 0; i < len(fSelection); i++ {
 		fSelection[i] = peers[(i+idx+1)%len(peers)]
 	}
-
-	//TODO verify this
 	return fSelection
 }
 
@@ -110,12 +108,7 @@ func (m *Model) BroadCastJson(v interface{}) {
 	if err != nil {
 		log.Fatal("It was not possible to serialize data.")
 	}
-	go m.BroadCastBytes(bytes)
-
-}
-
-func (m *Model) BroadCast(text string) {
-	m.BroadCastBytes([]byte(text))
+	m.BroadCastBytes(bytes)
 }
 
 func (m *Model) WasProcessed(msg string) bool {
