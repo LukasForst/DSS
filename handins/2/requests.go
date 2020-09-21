@@ -35,5 +35,11 @@ type Ledger struct {
 	lock     sync.Mutex
 }
 
+func MakeLedger() *Ledger {
+	ledger := new(Ledger)
+	ledger.Accounts = make(map[string]int)
+	return ledger
+}
+
 type Transaction struct {
 }
