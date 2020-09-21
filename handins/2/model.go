@@ -36,7 +36,6 @@ func (m *Model) AddNetworkPeer(address string) bool {
 
 	value, ok := m.peersList[address]
 	m.peersList[address] = ok && value
-	m.PrintPeers()
 	return !ok
 }
 
@@ -50,13 +49,11 @@ func (m *Model) AddNetworkPeers(addresses []string) {
 func (m *Model) RegisterMyAddress(address string) {
 	// this is sequential, no need for locking
 	m.peersList[address] = true
-	m.PrintPeers()
 }
 
 func (m *Model) GetPeersList() []string {
 	m.pMutex.RLock()
 	defer m.pMutex.RUnlock()
-
 	// create sort list
 	peers := make([]string, 0, len(m.peersList))
 	for address := range m.peersList {

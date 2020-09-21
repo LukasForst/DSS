@@ -38,6 +38,7 @@ func OnNewConnection(conn net.Conn, model *Model) {
 			PrintStatus("Present status received from: " + UnmarshalString(payload))
 			added := model.AddNetworkPeer(UnmarshalString(payload))
 			if added {
+				model.PrintPeers()
 				// broadcast the presence further in the network
 				model.BroadCastJson(objmap)
 			}
@@ -114,6 +115,8 @@ func InitialConnection(conn net.Conn, model *Model) {
 	}
 	// register the peers in the application
 	model.AddNetworkPeers(peers.Data)
+	// print peers
+	model.PrintPeers()
 	// drop this initial connection
 	_ = conn.Close()
 }
