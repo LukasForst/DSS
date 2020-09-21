@@ -1,9 +1,10 @@
 package main
 
 import (
+	"encoding/json"
+	"log"
 	"net"
 	"sort"
-	"strings"
 	"sync"
 )
 
@@ -43,17 +44,21 @@ func (m *Model) RegisterMyAddress(address string) {
 	m.peersList[address] = true
 }
 
-func (m *Model) FormatMyPeers() string {
+func (m *Model) GetPeersList() []string {
 	// create sort list
 	peers := make([]string, 0, len(m.peersList))
 	for address, _ := range m.peersList {
 		peers = append(peers, address)
 	}
 	sort.Strings(peers)
-	return strings.Join(peers, ",")
+	return peers
 }
 
 func (m *Model) SelectTopNAfterMe(n int) []string {
+	if len(m.peersList) == 1 {
+		return make([]string, 0, 0)
+	}
+
 	// remember who am I
 	var me string
 	// create sort list
@@ -68,9 +73,13 @@ func (m *Model) SelectTopNAfterMe(n int) []string {
 	// find me
 	idx := sort.SearchStrings(peers, me)
 	// select 10 after me, maybe less
+	fSelection := make([]string, 1, Min(len(peers)-idx, n))
+	for i := 0; i < len(fSelection); i++ {
+		fSelection[i] = peers[(i+idx+1)%len(peers)]
+	}
+
 	//TODO verify this
-	fSize := Min(len(peers)-idx, idx+n)
-	return peers[idx:fSize]
+	return fSelection
 }
 
 func (m *Model) AddConn(conn net.Conn) {
@@ -84,8 +93,7 @@ func (m *Model) RemoveAndCloseConn(conn net.Conn) {
 	_ = conn.Close()
 }
 
-func (m *Model) BroadCast(text string) {
-	msg := []byte(text)
+func (m *Model) BroadCastBytes(msg []byte) {
 	m.cMutex.RLock()
 	defer m.cMutex.RUnlock()
 
@@ -95,6 +103,19 @@ func (m *Model) BroadCast(text string) {
 			PrintStatus("It was not possible to send something to " + peerAddress + " -> " + err.Error())
 		}
 	}
+}
+
+func (m *Model) BroadCastJson(v interface{}) {
+	bytes, err := json.Marshal(v)
+	if err != nil {
+		log.Fatal("It was not possible to serialize data.")
+	}
+	go m.BroadCastBytes(bytes)
+
+}
+
+func (m *Model) BroadCast(text string) {
+	m.BroadCastBytes([]byte(text))
 }
 
 func (m *Model) WasProcessed(msg string) bool {

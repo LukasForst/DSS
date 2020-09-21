@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"log"
 	"net"
 	"os"
@@ -11,39 +12,32 @@ import (
 func OnNewConnection(conn net.Conn, model *Model) {
 	model.AddConn(conn)
 	defer model.RemoveAndCloseConn(conn)
-	// first phase
 	for {
+		decoder := json.NewDecoder(conn)
 
-		msg, err := bufio.NewReader(conn).ReadString('\n')
-		if err != nil {
+		var objmap map[string]json.RawMessage
+		if err := decoder.Decode(&objmap); err != nil {
+			PrintStatus("Connection dropped - " + err.Error())
 			break
 		}
 
-		if model.WasProcessed(msg) {
-			continue
-		}
-		model.MessageProcessed(msg)
+		// TODO verify was processed
 
-		// todo maybe remove this
-		PrintIncoming(strings.TrimSpace(msg))
-
-		// todo this is ugly
-		split := strings.Split(strings.TrimSpace(msg), "|")
-		command := split[0]
-
-		if command == "present" {
-			payload := split[1]
-			model.AddNetworkPeer(payload)
-			go model.BroadCast(msg)
-		} else if command == "send-peers" {
-			peers := model.FormatMyPeers()
-			_, err := conn.Write([]byte(peers))
-			if err != nil {
-				log.Fatal("Sending peers failed.")
+		mType, payload := MessageTypeAndRest(objmap)
+		switch mType {
+		// just send my own peers
+		case "peers-request":
+			peers := MakePeersList(model.GetPeersList())
+			if err := json.NewEncoder(conn).Encode(peers); err != nil {
+				log.Println("It was not possible to send data.")
 			}
-		} else if command == "transactions" {
-			PrintStatus("Ending connection phase.")
-			break
+		// notification about presence
+		case "present":
+			model.AddNetworkPeer(UnmarshalString(payload))
+			// broadcast the presence further in the network
+			model.BroadCastJson(objmap)
+		case "transaction":
+			// TODO work with transaction
 		}
 	}
 }
@@ -78,7 +72,7 @@ func RunServer(model *Model) {
 	// connect to neighborhood
 	ConnectToNeighborhood(model)
 	// broadcast presence
-	go model.BroadCast("present|" + ipAndPort + "\n")
+	go model.BroadCastJson(MakePresent(ipAndPort))
 
 	// listen
 	for {
@@ -94,19 +88,20 @@ func RunServer(model *Model) {
 func InitialConnection(conn net.Conn, model *Model) {
 	defer conn.Close()
 
+	enc := json.NewEncoder(conn)
+	dec := json.NewDecoder(conn)
 	// ask for peers
-	_, err := conn.Write([]byte("send-peers\n"))
-	if err != nil {
+	if err := enc.Encode(MakePeersRequest()); err != nil {
 		log.Fatal("It was not possible to connect to the first peer! ->" + err.Error())
 	}
 	// receive peers
-	msg, err := bufio.NewReader(conn).ReadString('\n')
-	if err != nil {
+	var peers PeersList
+	if err := dec.Decode(&peers); err != nil {
 		log.Fatal("It was not possible to connect to the first peer! ->" + err.Error())
 	}
+
 	// register the peers in the application
-	peers := strings.Split(strings.TrimSpace(msg), ",")
-	model.AddNetworkPeers(peers)
+	model.AddNetworkPeers(peers.Data)
 	PrintStatus("Peers list registered.")
 }
 
