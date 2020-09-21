@@ -21,11 +21,11 @@ func OnNewConnection(conn net.Conn, model *Model) {
 			break
 		}
 
-		// TODO verify was processed
-
 		mType, payload := MessageTypeAndRest(objmap)
+
 		switch mType {
 		// just send my own peers
+		//not propagated in the network, no need to check for uniqueness
 		case "peers-request":
 			PrintStatus("Peers request received!")
 			peers := MakePeersList(model.GetPeersList())
@@ -33,12 +33,15 @@ func OnNewConnection(conn net.Conn, model *Model) {
 				log.Println("It was not possible to send data.")
 			}
 		// notification about presence
+		// need to check uniqueness, propagated on the network
 		case "present":
 			PrintStatus("Present status received from: " + UnmarshalString(payload))
-			model.AddNetworkPeer(UnmarshalString(payload))
-			// broadcast the presence further in the network
-			// TODO enable broadcast
-			//model.BroadCastJson(objmap)
+			added := model.AddNetworkPeer(UnmarshalString(payload))
+			if added {
+				model.PrintPeers()
+				// broadcast the presence further in the network
+				model.BroadCastJson(objmap)
+			}
 		case "transaction":
 			var transaction Transaction
 			if err := json.Unmarshal(payload, &transaction); err != nil {
@@ -98,8 +101,6 @@ func RunServer(model *Model) {
 }
 
 func InitialConnection(conn net.Conn, model *Model) {
-	defer conn.Close()
-
 	enc := json.NewEncoder(conn)
 	dec := json.NewDecoder(conn)
 	PrintStatus("Asking for the peers.")
@@ -115,7 +116,10 @@ func InitialConnection(conn net.Conn, model *Model) {
 	}
 	// register the peers in the application
 	model.AddNetworkPeers(peers.Data)
-	PrintStatus("Peers list registered.")
+	// print peers
+	model.PrintPeers()
+	// drop this initial connection
+	_ = conn.Close()
 }
 
 func Startup() {
@@ -126,16 +130,15 @@ func Startup() {
 	ipPort, _ := stdinReader.ReadString('\n')
 
 	conn, err := net.Dial("tcp", strings.TrimSpace(ipPort))
-
+	// if the peer does not exist, don't connect
 	if err != nil {
 		PrintStatus("It was not possible to connect - creating own network.")
 	} else {
+		// perform initial sync with the remote peer
 		InitialConnection(conn, &model)
 	}
 
-	go RunServer(&model)
-	for {
-	}
+	RunServer(&model)
 }
 
 func main() {

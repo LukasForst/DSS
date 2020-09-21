@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"sort"
+	"strings"
 	"sync"
 )
 
@@ -28,9 +29,14 @@ func MakeModel() Model {
 	}
 }
 
-func (m *Model) AddNetworkPeer(address string) {
+// returns true if it was added, or already existed
+func (m *Model) AddNetworkPeer(address string) bool {
+	m.pMutex.Lock()
+	defer m.pMutex.Unlock()
+
 	value, ok := m.peersList[address]
 	m.peersList[address] = ok && value
+	return !ok
 }
 
 // during the protocol warmup, nobody knows my own address
@@ -41,13 +47,16 @@ func (m *Model) AddNetworkPeers(addresses []string) {
 }
 
 func (m *Model) RegisterMyAddress(address string) {
+	// this is sequential, no need for locking
 	m.peersList[address] = true
 }
 
 func (m *Model) GetPeersList() []string {
+	m.pMutex.RLock()
+	defer m.pMutex.RUnlock()
 	// create sort list
 	peers := make([]string, 0, len(m.peersList))
-	for address, _ := range m.peersList {
+	for address := range m.peersList {
 		peers = append(peers, address)
 	}
 	sort.Strings(peers)
@@ -55,10 +64,12 @@ func (m *Model) GetPeersList() []string {
 }
 
 func (m *Model) SelectTopNAfterMe(n int) []string {
+	m.pMutex.RLock()
+	defer m.pMutex.RUnlock()
+
 	if len(m.peersList) == 1 {
 		return make([]string, 0, 0)
 	}
-
 	// remember who am I
 	var me string
 	// create sort list
@@ -111,16 +122,6 @@ func (m *Model) BroadCastJson(v interface{}) {
 	m.BroadCastBytes(bytes)
 }
 
-func (m *Model) WasProcessed(msg string) bool {
-	m.mpMutex.RLock()
-	defer m.mpMutex.RUnlock()
-
-	value, ok := m.messagesSent[msg]
-	return ok && value
-}
-
-func (m *Model) MessageProcessed(msg string) {
-	m.mpMutex.Lock()
-	defer m.mpMutex.Unlock()
-	m.messagesSent[msg] = true
+func (m *Model) PrintPeers() {
+	PrintStatus("Peers: " + strings.Join(m.GetPeersList(), ", "))
 }
