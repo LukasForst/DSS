@@ -5,10 +5,18 @@ import (
 	"log"
 	"net"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 )
+
+type Ledger struct {
+	Accounts map[string]int
+	lock     sync.Mutex
+}
+
+func MakeLedger() Ledger {
+	return Ledger{Accounts: make(map[string]int)}
+}
 
 type Model struct {
 	connections map[string]net.Conn
@@ -20,6 +28,8 @@ type Model struct {
 	// key: ip & port, value: is me?
 	peersList map[string]bool
 	pMutex    sync.RWMutex
+
+	ledger Ledger
 }
 
 func MakeModel() Model {
@@ -27,6 +37,7 @@ func MakeModel() Model {
 		connections:  make(map[string]net.Conn),
 		messagesSent: make(map[string]bool),
 		peersList:    make(map[string]bool),
+		ledger:       MakeLedger(),
 	}
 }
 
@@ -47,11 +58,13 @@ func (m *Model) AddNetworkPeers(addresses []string) {
 	}
 }
 
+// store server address in the peers list
 func (m *Model) RegisterMyAddress(address string) {
 	// this is sequential, no need for locking
 	m.peersList[address] = true
 }
 
+// returns sorted list of all peers
 func (m *Model) GetPeersList() []string {
 	m.pMutex.RLock()
 	defer m.pMutex.RUnlock()
@@ -64,6 +77,8 @@ func (m *Model) GetPeersList() []string {
 	return peers
 }
 
+// return array of all peers that are in the sorted list behind
+// current instance
 func (m *Model) SelectTopNAfterMe(n int) []string {
 	m.pMutex.RLock()
 	defer m.pMutex.RUnlock()
@@ -103,18 +118,20 @@ func (m *Model) RemoveAndCloseConn(conn net.Conn) {
 	_ = conn.Close()
 }
 
-func (m *Model) BroadCastBytes(msg []byte) {
+// send bytes to all current connections
+func (m *Model) BroadCastBytes(bytes []byte) {
 	m.cMutex.RLock()
 	defer m.cMutex.RUnlock()
 
 	for peerAddress, connection := range m.connections {
-		_, err := connection.Write(msg)
+		_, err := connection.Write(bytes)
 		if err != nil {
 			PrintStatus("It was not possible to send something to " + peerAddress + " -> " + err.Error())
 		}
 	}
 }
 
+// encode as JSON and sent it to all connections
 func (m *Model) BroadCastJson(v interface{}) {
 	bytes, err := json.Marshal(v)
 	if err != nil {
@@ -123,22 +140,7 @@ func (m *Model) BroadCastJson(v interface{}) {
 	m.BroadCastBytes(bytes)
 }
 
-func (m *Model) BroadCastTransaction(transaction Transaction) {
-	m.cMutex.RLock()
-	defer m.cMutex.RUnlock()
-
-	for peerAddress, connection := range m.connections {
-		//TODO: broadcast Transaction object
-
-		_, err := connection.Write([]byte("Transaction with ID " + transaction.ID + "made from " +
-			transaction.From + "to " + transaction.To + "with an amount of " + strconv.Itoa(transaction.Amount)))
-		if err != nil {
-			PrintStatus("It was not possible to broadcast the transaction to " + peerAddress + " -> " + err.Error())
-		}
-	}
-
-}
-
+// print all peers to the console
 func (m *Model) PrintPeers() {
 	PrintStatus("Peers: " + strings.Join(m.GetPeersList(), ", "))
 }

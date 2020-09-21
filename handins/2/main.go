@@ -61,7 +61,7 @@ func InitialConnection(conn net.Conn, model *Model) {
 		log.Fatal("It was not possible to connect to the first peer! ->" + err.Error())
 	}
 	// receive peers
-	var peers PeersList
+	var peers PeersListDto
 	if err := dec.Decode(&peers); err != nil {
 		log.Fatal("It was not possible to connect to the first peer! ->" + err.Error())
 	}

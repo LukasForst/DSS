@@ -1,46 +1,34 @@
 package main
 
-import (
-	"sync"
-)
-
-type Present struct {
+type PresentDto struct {
 	Type string
+	// name of the server
 	Data string
 }
 
-func MakePresent(address string) Present {
-	return Present{Type: "present", Data: address}
+func MakePresent(address string) PresentDto {
+	return PresentDto{Type: "present", Data: address}
 }
 
-type PeersList struct {
+type PeersListDto struct {
 	Type string
+	// names of the servers
 	Data []string
 }
 
-func MakePeersList(data []string) PeersList {
-	return PeersList{Type: "peers-list", Data: data}
+func MakePeersList(data []string) PeersListDto {
+	return PeersListDto{Type: "peers-list", Data: data}
 }
 
-type PeersRequest struct {
+type PeersRequestDto struct {
 	Type string
 }
 
-func MakePeersRequest() PeersRequest {
-	return PeersRequest{Type: "peers-request"}
+func MakePeersRequest() PeersRequestDto {
+	return PeersRequestDto{Type: "peers-request"}
 }
 
-type Ledger struct {
-	Accounts map[string]int
-	lock     sync.Mutex
-}
-
-func MakeLedger() *Ledger {
-	ledger := new(Ledger)
-	ledger.Accounts = make(map[string]int)
-	return ledger
-}
-
+// type given from the book
 type Transaction struct {
 	ID     string
 	From   string
@@ -48,7 +36,24 @@ type Transaction struct {
 	Amount int
 }
 
-func (l *Ledger) DoTransaction(t *Transaction) {
+// wrapper adding clock to the transaction
+type TransactionWithClock struct {
+	Transaction Transaction
+	// TODO @Hannah, please fix clock
+	Clock map[string]int
+}
+
+// data transfer object for transaction
+type TransactionDto struct {
+	Type string
+	Data TransactionWithClock
+}
+
+func MakeTransactionDto(transaction TransactionWithClock) TransactionDto {
+	return TransactionDto{Type: "transaction", Data: transaction}
+}
+
+func (l *Ledger) DoTransaction(t Transaction) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 

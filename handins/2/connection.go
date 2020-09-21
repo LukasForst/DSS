@@ -28,50 +28,61 @@ func OnNewConnection(conn net.Conn, model *Model) {
 			OnPeersRequest(conn, model)
 		// new peers received
 		case "peers-list":
-			OnPeersList(payload, model)
+			var peers []string
+			if err := json.Unmarshal(payload, &peers); err != nil {
+				log.Fatal("It was not possible to unmarshall the peers list.")
+			}
+			OnPeersList(peers, model)
 		// notification about presence
 		// need to check uniqueness, propagated on the network
 		case "present":
-			OnPresent(objmap, payload, model)
+			OnPresent(objmap, UnmarshalString(payload), model)
 		// new transaction in the system
 		case "transaction":
-			var transaction Transaction
-			var ledger Ledger
+			var transaction TransactionWithClock
 			if err := json.Unmarshal(payload, &transaction); err != nil {
-				log.Fatal("It was not possible to parse transaction.")
+				log.Fatal("It was not possible to parse transaction object.")
 			}
-			OnTransactionReceived(transaction, ledger, model)
+			OnTransactionReceived(transaction, model)
 		}
 	}
 }
 
-func OnTransactionReceived(transaction Transaction, ledger Ledger, model *Model) {
-	//TODO: make transaction, broadcast Transaction object, update local Ledger object
+func OnTransactionReceived(transaction TransactionWithClock, model *Model) {
+	// TODO @Hannah - check whether we already did the transaction (use clock)
 
-	//ledger.DoTransaction(transaction)
-	model.BroadCastTransaction(transaction)
+	// transaction.Clock
+	// TODO @Hannah - if we already did the transaction, return
 
+	// lock the ledger
+	model.ledger.lock.Lock()
+	defer model.ledger.lock.Unlock()
+
+	// TODO @Hannah - check whether we can perform transaction right away (diff in clock is just one)
+	// if this is not the case, store transaction in some waiting queue
+
+	// TODO @Hannah - perform the transaction if it is safe (diff in clock just one)
+	model.ledger.DoTransaction(transaction.Transaction)
+
+	// propagate transaction with the same clock
+	model.BroadCastJson(MakeTransactionDto(transaction))
 }
 
 func OnPresent(
 	objmap map[string]json.RawMessage,
-	payload json.RawMessage,
+	newPeer string,
 	model *Model,
 ) {
-	added := model.AddNetworkPeer(UnmarshalString(payload))
+	added := model.AddNetworkPeer(newPeer)
 	if added {
-		PrintStatus("Peer joined: " + UnmarshalString(payload))
+		PrintStatus("Peer joined: " + newPeer)
 		model.PrintPeers()
 		// broadcast the presence further in the network
 		model.BroadCastJson(objmap)
 	}
 }
 
-func OnPeersList(payload json.RawMessage, model *Model) {
-	var peers []string
-	if err := json.Unmarshal(payload, &peers); err != nil {
-		log.Fatal("It was not possible to unmarshall the peers list.")
-	}
+func OnPeersList(peers []string, model *Model) {
 	model.AddNetworkPeers(peers)
 	model.PrintPeers()
 }
