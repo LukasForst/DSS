@@ -49,7 +49,7 @@ func OnNewConnection(conn net.Conn, model *Model) {
 }
 
 func OnTransactionReceived(transaction Transaction, model *Model) {
-	//check whether we already did the transaction (check ID in transactionSeen map)
+	//check whether we already did the transaction by checking the transaction ID
 
 	transactionID := transaction.ID
 
