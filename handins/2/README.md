@@ -10,11 +10,21 @@ We established the network as in the [first assignment](https://github.com/Lukas
 and then executed `test.go` with different parameters, connecting to different peers,
 running the different amount of transactions.
 
-> Discuss whether connection to the next ten peers is a good strategy with re-
-  spect to connectivity. In particular, if the network has 1000 peers, how many
-  connections need to break to partition the network?
+> Discuss whether connection to the next ten peers is a good strategy with respect
+> to connectivity. In particular, if the network has 1000 peers, 
+> how many connections need to break to partition the network?
 
-pass
+As each peer is connecting to the next ten peers, the total connections to one peer
+is 20 peers (ten before connecting to this peer, the peer then connects to ten after),
+for that reason if we break 20 connections (ten in one segment/line, 
+and ten in the second segment/line), the network will be disconnected.
+
+As for the question, whether this is a good strategy, the number of connections
+is reasonable (20 at one time). However, this strategy is not really robust, as 
+the peers are connected to each other in alphabetical order (at least in our implementation).
+The main concern here is that if multiple peers share the geolocation and IP addresses,
+it could happen, that this particular location would fall down due to 
+electricity/internet problems. Which could potentially result in disconnecting the network.
 
 
 > Argue that your system has eventual consistency if all processes are correct
