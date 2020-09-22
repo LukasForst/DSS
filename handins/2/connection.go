@@ -39,7 +39,7 @@ func OnNewConnection(conn net.Conn, model *Model) {
 			OnPresent(objmap, UnmarshalString(payload), model)
 		// new transaction in the system
 		case "transaction":
-			var transaction TransactionWithClock
+			var transaction Transaction
 			if err := json.Unmarshal(payload, &transaction); err != nil {
 				log.Fatal("It was not possible to parse transaction object.")
 			}
@@ -48,7 +48,7 @@ func OnNewConnection(conn net.Conn, model *Model) {
 	}
 }
 
-func OnTransactionReceived(transaction TransactionWithClock, model *Model) {
+func OnTransactionReceived(transaction Transaction, model *Model) {
 	// TODO @Hannah - check whether we already did the transaction (use clock)
 
 	// transaction.Clock
@@ -62,7 +62,7 @@ func OnTransactionReceived(transaction TransactionWithClock, model *Model) {
 	// if this is not the case, store transaction in some waiting queue
 
 	// TODO @Hannah - perform the transaction if it is safe (diff in clock just one)
-	model.ledger.DoTransaction(transaction.Transaction)
+	model.ledger.DoTransaction(transaction)
 
 	// propagate transaction with the same clock
 	model.BroadCastJson(MakeTransactionDto(transaction))

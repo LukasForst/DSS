@@ -6,13 +6,16 @@ ___
 
 > Test you system and describe how you tested it
 
-pass
+We established the network as in the [first assignment](https://github.com/LukasForst/DSS/tree/master/handins/1#hand-in-1-report)
+and then executed `test.go` with different parameters, connecting to different peers,
+running the different amount of transactions.
 
 > Discuss whether connection to the next ten peers is a good strategy with re-
   spect to connectivity. In particular, if the network has 1000 peers, how many
   connections need to break to partition the network?
 
 pass
+
 
 > Argue that your system has eventual consistency if all processes are correct
 > and the system is run in two-phase mode
@@ -31,7 +34,7 @@ If the transaction was executed, it is ignored and nothing happens next.
 If the transaction was not received before, it is executed, put to the transaction log
 and broadcast to all other connected peers. This process ensures that each transaction
 was executed exactly once and moreover, as the network is connected, that each peer
-eventually receives the transaction message. Thus the transaction logs should be consistent
+eventually receives the transaction message. Thus, the transaction logs should be consistent
 at the end of the execution.
 
 The system wouldn't be consistent if it does not run in the two-phase mode,
