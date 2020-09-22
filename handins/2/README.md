@@ -1,7 +1,7 @@
 # Hand-in 2 Report
 ___
 * *Hannah Eliza Schaibe, Lukas Forst*
-* Github Repository - https://github.com/LukasForst/DSS
+* Github Repository - [LukasForst/DSS](https://github.com/LukasForst/DSS/tree/master/handins/2)
 ___
 
 > Test you system and describe how you tested it
@@ -17,8 +17,26 @@ pass
 > Argue that your system has eventual consistency if all processes are correct
 > and the system is run in two-phase mode
 
-pass
+During the first phase od building the network, every peer eventually receives 
+the whole list of all peers in the network. That is because when it joins the network,
+it receives whole connection table from the network peer. After joining, it announces
+its presence, subsequently other peers receive a presence message and if they 
+already have the record, they ignore it. However, if they don't know the peer,
+they update the peers list and broadcast the presence message to all 
+other connections they have. This process ensures that the network is connected.
 
+If the transaction is received, peer checks whether it was already executed by 
+checking the `ID` of the transaction, and the transaction log.
+If the transaction was executed, it is ignored and nothing happens next.
+If the transaction was not received before, it is executed, put to the transaction log
+and broadcast to all other connected peers. This process ensures that each transaction
+was executed exactly once and moreover, as the network is connected, that each peer
+eventually receives the transaction message. Thus the transaction logs should be consistent
+at the end of the execution.
+
+The system wouldn't be consistent if it does not run in the two-phase mode,
+mainly because latecomers wouldn't receive transactions, that were distributed 
+on the network before they joined.
 
 
 > Assume we made the following change to the system:
