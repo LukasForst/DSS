@@ -36,18 +36,13 @@ type Transaction struct {
 	Amount int
 }
 
-// wrapper adding clock to the transaction
-type TransactionWithClock struct {
-	Transaction Transaction
-}
-
 // data transfer object for transaction
 type TransactionDto struct {
 	Type string
-	Data TransactionWithClock
+	Data Transaction
 }
 
-func MakeTransactionDto(transaction TransactionWithClock) TransactionDto {
+func MakeTransactionDto(transaction Transaction) TransactionDto {
 	return TransactionDto{Type: "transaction", Data: transaction}
 }
 

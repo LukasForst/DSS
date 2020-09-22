@@ -22,6 +22,7 @@ type Model struct {
 	connections map[string]net.Conn
 	cMutex      sync.RWMutex
 
+	//key: transaction ID, value: seen before?
 	transactionsSeen map[string]bool
 
 	mpMutex sync.RWMutex

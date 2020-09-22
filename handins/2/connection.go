@@ -48,8 +48,12 @@ func OnNewConnection(conn net.Conn, model *Model) {
 	}
 }
 
-func OnTransactionReceived(transaction TransactionWithClock, model *Model) {
+func OnTransactionReceived(transaction Transaction, model *Model) {
 	// TODO check whether we already did the transaction (check ID in transactionSeen map)
+	//yes -> do transaction and broadcast
+	//no -> return
+
+
 
 	//transaction.Transaction.From
 
