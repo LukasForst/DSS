@@ -39,14 +39,6 @@ type Transaction struct {
 // wrapper adding clock to the transaction
 type TransactionWithClock struct {
 	Transaction Transaction
-	// TODO @Hannah, please fix clock
-	Clock map[string]int
-	//Clock = make(map[string]int)
-	// Clock := make([]string, 0, len(m.peersList))
-	//initial clock
-	// for x:= range m.peersList {
-	// 	Clock[x] = 0
-	//	Clock = append(Clock, x)
 }
 
 // data transfer object for transaction

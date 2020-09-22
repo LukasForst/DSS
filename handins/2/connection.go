@@ -49,15 +49,11 @@ func OnNewConnection(conn net.Conn, model *Model) {
 }
 
 func OnTransactionReceived(transaction TransactionWithClock, model *Model) {
-	// TODO @Hannah - check whether we already did the transaction (use clock)
+	// TODO @Hannah - check whether we already did the transaction (check ID)
 
-	for i := 0; i < (len(transaction.Clock)); i++ {
-		//check clock counters
-	}
 
 	//transaction.Transaction.From
 
-	// transaction.Clock
 	// TODO @Hannah - if we already did the transaction, return
 
 	// lock the ledger
