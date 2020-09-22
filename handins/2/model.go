@@ -22,8 +22,9 @@ type Model struct {
 	connections map[string]net.Conn
 	cMutex      sync.RWMutex
 
-	messagesSent map[string]bool
-	mpMutex      sync.RWMutex
+	transactionsSeen map[string]bool
+
+	mpMutex sync.RWMutex
 
 	// key: ip & port, value: is me?
 	peersList map[string]bool
@@ -34,10 +35,10 @@ type Model struct {
 
 func MakeModel() Model {
 	return Model{
-		connections:  make(map[string]net.Conn),
-		messagesSent: make(map[string]bool),
-		peersList:    make(map[string]bool),
-		ledger:       MakeLedger(),
+		connections:      make(map[string]net.Conn),
+		transactionsSeen: make(map[string]bool),
+		peersList:        make(map[string]bool),
+		ledger:           MakeLedger(),
 	}
 }
 

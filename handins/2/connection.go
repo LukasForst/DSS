@@ -49,24 +49,20 @@ func OnNewConnection(conn net.Conn, model *Model) {
 }
 
 func OnTransactionReceived(transaction TransactionWithClock, model *Model) {
-	// TODO @Hannah - check whether we already did the transaction (check ID)
-
+	// TODO check whether we already did the transaction (check ID in transactionSeen map)
 
 	//transaction.Transaction.From
 
-	// TODO @Hannah - if we already did the transaction, return
+	// TODO if we already did the transaction, return
 
 	// lock the ledger
 	model.ledger.lock.Lock()
 	defer model.ledger.lock.Unlock()
 
-	// TODO @Hannah - check whether we can perform transaction right away (diff in clock is just one)
-	// if this is not the case, store transaction in some waiting queue
-
-	// TODO @Hannah - perform the transaction if it is safe (diff in clock just one)
+	// TODO @Hannah - perform the transaction
 	model.ledger.DoTransaction(transaction.Transaction)
 
-	// propagate transaction with the same clock
+	// propagate transaction
 	model.BroadCastJson(MakeTransactionDto(transaction))
 }
 
