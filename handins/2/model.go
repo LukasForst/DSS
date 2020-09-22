@@ -146,3 +146,17 @@ func (m *Model) BroadCastJson(v interface{}) {
 func (m *Model) PrintPeers() {
 	PrintStatus("Peers: " + strings.Join(m.GetPeersList(), ", "))
 }
+
+// // returns true if it was added, or already existed
+// func (m *Model) AddTransactionID(transaction Transaction) bool {
+// 	transactionID := transaction.ID
+// 	value, seen := transactionsSeen[transactionID]
+// 	transactionsSeen[transactionID] = seen && value
+// 	return !seen
+// }
+
+// func (m *Model) AddTransactionIDs(transactions []string) {
+// 	for _, t := range transactions {
+// 		m.AddTransactionID(t)
+// 	}
+// }

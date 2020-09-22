@@ -39,7 +39,7 @@ func OnNewConnection(conn net.Conn, model *Model) {
 			OnPresent(objmap, UnmarshalString(payload), model)
 		// new transaction in the system
 		case "transaction":
-			var transaction TransactionWithClock
+			var transaction Transaction
 			if err := json.Unmarshal(payload, &transaction); err != nil {
 				log.Fatal("It was not possible to parse transaction object.")
 			}
@@ -49,25 +49,28 @@ func OnNewConnection(conn net.Conn, model *Model) {
 }
 
 func OnTransactionReceived(transaction Transaction, model *Model) {
-	// TODO check whether we already did the transaction (check ID in transactionSeen map)
-	//yes -> do transaction and broadcast
-	//no -> return
+	//check whether we already did the transaction (check ID in transactionSeen map)
 
+	transactionID := transaction.ID
 
+	// If we already did the transaction, return
+	if model.transactionsSeen[transactionID] == true {
+		return
+	} else {
+		// lock the ledger
+		model.ledger.lock.Lock()
+		defer model.ledger.lock.Unlock()
 
-	//transaction.Transaction.From
+		// perform the transaction
+		model.ledger.DoTransaction(transaction)
 
-	// TODO if we already did the transaction, return
+		//register Transaction as seen
+		model.transactionsSeen[transactionID] = true
 
-	// lock the ledger
-	model.ledger.lock.Lock()
-	defer model.ledger.lock.Unlock()
+		// propagate transaction
+		model.BroadCastJson(MakeTransactionDto(transaction))
 
-	// TODO @Hannah - perform the transaction
-	model.ledger.DoTransaction(transaction.Transaction)
-
-	// propagate transaction
-	model.BroadCastJson(MakeTransactionDto(transaction))
+	}
 }
 
 func OnPresent(
