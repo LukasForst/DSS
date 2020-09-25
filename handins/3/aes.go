@@ -4,7 +4,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
@@ -16,6 +15,7 @@ type File struct {
 }
 
 //Write ciphertext to given file
+
 func EncryptToFile(key []byte, inputFilename string, encFilename string, iv []byte) *os.File {
 
 	//var fileContent string //read filecontent from file
@@ -49,7 +49,7 @@ func EncryptToFile(key []byte, inputFilename string, encFilename string, iv []by
 	writer := &cipher.StreamWriter{S: stream, W: outputFile}
 
 	if _, err := io.Copy(writer, inputFile); err != nil {
-		panic(fmt.Sprintf("Creation of output file and encryption was not successful."))
+		panic(fmt.Sprintf("Creation of encrypted output file was not successful."))
 	}
 
 	//fileContent = hex.EncodeToString(ciphertext)
@@ -58,26 +58,45 @@ func EncryptToFile(key []byte, inputFilename string, encFilename string, iv []by
 }
 
 //Decrypt ciphertext from file and output plaintext
-func DecryptFromFile(key []byte, string, iv []byte) string {
+
+func DecryptFromFile(key []byte, encFilename string, decFilename string, iv []byte) *os.File {
 
 	//var fileContent string //read filecontent from file
 
-	ciphertext, _ := hex.DecodeString(fileContent)
+	inputFile, err := os.Open(encFilename)
+
+	if err != nil {
+		panic(fmt.Sprintf("Encrypted file could not be opened: ", encFilename))
+	}
+
+	defer inputFile.Close()
+
+	//ciphertext, _ := hex.DecodeString(fileContent)
 	block, err := aes.NewCipher([]byte(key))
 	if err != nil {
-		//panic()
+		panic(fmt.Sprintf("Cipher could not be created"))
 	}
 
-	ciphertext = ciphertext[aes.BlockSize:]
-	if len(ciphertext)%aes.BlockSize != 0 {
-		panic("Ciphertext length is not a multiple of the cipher block size.")
+	//ciphertext = ciphertext[aes.BlockSize:]
+	// if len(ciphertext)%aes.BlockSize != 0 {
+	// 	panic("Ciphertext length is not a multiple of the cipher block size.")
+	// }
+
+	stream := cipher.NewCTR(block, iv)
+	//stream.XORKeyStream(ciphertext, ciphertext)
+	//fileContent = string(ciphertext[:])
+	outputFile, err := os.OpenFile(decFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		panic(fmt.Sprintf("Decoded file could not be created: ", decFilename))
+	}
+	defer outputFile.Close()
+
+	reader := &cipher.StreamReader{S: stream, R: inputFile}
+	if _, err := io.Copy(outputFile, reader); err != nil {
+		panic(fmt.Sprintf("Creation of decrypted output file was not successful."))
 	}
 
-	mode := cipher.NewCTR(block, iv)
-	mode.XORKeyStream(ciphertext, ciphertext)
-	fileContent = string(ciphertext[:])
-
-	return fileContent
+	return outputFile
 }
 
 //generate 32 byte random key
