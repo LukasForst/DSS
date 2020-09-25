@@ -113,7 +113,7 @@ func AesKeyGen() []byte {
 func IVGen() []byte {
 	iv := make([]byte, aes.BlockSize)
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		//panic(fmt.Sprintf)
+		panic(fmt.Sprintf("IV could not be created."))
 	}
 	return iv
 
