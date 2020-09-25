@@ -4,6 +4,10 @@ package main
 // 	"crypto/aes"
 // )
 
+type File struct {
+	filename string
+}
+
 //Write ciphertext to given file
 func EncryptToFile() {
 
