@@ -1,5 +1,9 @@
 package main
 
+// import (
+// 	"crypto/aes"
+// )
+
 //Write ciphertext to given file
 func EncryptToFile() {
 
