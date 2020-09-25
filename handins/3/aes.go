@@ -17,7 +17,7 @@ type File struct {
 //Write ciphertext to given file
 func EncryptToFile(key []byte, filename string, iv []byte) string {
 
-	var fileContent string
+	var fileContent string //read filecontent from file
 
 	block, err := aes.NewCipher([]byte(key))
 	if err != nil {
@@ -37,7 +37,22 @@ func EncryptToFile(key []byte, filename string, iv []byte) string {
 //Decrypt ciphertext from file and output plaintext
 func DecryptFromFile(key []byte, filename string, iv []byte) string {
 
-	var fileContent string
+	var fileContent string //read filecontent from file
+
+	ciphertext, _ := hex.DecodeString(fileContent)
+	block, err := aes.NewCipher([]byte(key))
+	if err != nil {
+		//panic()
+	}
+
+	ciphertext = ciphertext[aes.BlockSize:]
+	if len(ciphertext)%aes.BlockSize != 0 {
+		panic("Ciphertext length is not a multiple of the cipher block size.")
+	}
+
+	mode := cipher.NewCTR(block, iv)
+	mode.XORKeyStream(ciphertext, ciphertext)
+	fileContent = string(ciphertext[:])
 
 	return fileContent
 }
