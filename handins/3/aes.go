@@ -123,21 +123,22 @@ func main() {
 
 	key := AesKeyGen()
 
-	filename := ""  //determine filename from input?
-	plaintext := "" //read plaintext from file
+	inputFilename := ""
+	encFilename := ""
+	decFilename := ""
 
 	iv := IVGen()
 
-	if len(plaintext)%aes.BlockSize != 0 {
-		//panic or do padding?
-	}
+	// if len(plaintext)%aes.BlockSize != 0 {
+	// 	//panic or do padding?
+	// }
 
-	fmt.Println("Original Plaintext:", plaintext)
+	//fmt.Println("Original Plaintext:", plaintext)
 
-	ciphertext := EncryptToFile(key, filename, iv)
-	fmt.Println("Encrypted ciphertext: ", ciphertext)
+	EncryptToFile(key, inputFilename, encFilename, iv)
+	//fmt.Println("Encrypted ciphertext: ", ciphertext)
 
-	decryptedText := DecryptFromFile(key, ciphertext, iv)
-	fmt.Println("Decrypted Plaintext: ", decryptedText)
+	DecryptFromFile(key, encFilename, decFilename, iv)
+	//fmt.Println("Decrypted Plaintext: ", decryptedText)
 
 }
