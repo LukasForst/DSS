@@ -2,7 +2,9 @@ package main
 
 import (
 	"crypto/aes"
+	"crypto/cipher"
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"io"
 )
@@ -16,6 +18,18 @@ type File struct {
 func EncryptToFile(key []byte, filename string, iv []byte) string {
 
 	var fileContent string
+
+	block, err := aes.NewCipher([]byte(key))
+	if err != nil {
+		//panic()
+	}
+
+	ciphertext := make([]byte, aes.BlockSize+len(fileContent))
+
+	stream := cipher.NewCTR(block, iv)
+	stream.XORKeyStream(ciphertext[aes.BlockSize:], []byte(fileContent))
+
+	fileContent = hex.EncodeToString(ciphertext)
 
 	return fileContent
 }
