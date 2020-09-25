@@ -14,7 +14,7 @@ type File struct {
 	content  string
 }
 
-//Write ciphertext to given file
+//Encrypt plaintext in given input file and write encrypted ciphertext to encrypted file
 
 func EncryptToFile(key []byte, inputFilename string, encFilename string, iv []byte) *os.File {
 
@@ -57,7 +57,7 @@ func EncryptToFile(key []byte, inputFilename string, encFilename string, iv []by
 	return outputFile
 }
 
-//Decrypt ciphertext from file and output plaintext
+//Decrypt cyphertext in given encrypted file and write decrypted plaintext to decrypted file
 
 func DecryptFromFile(key []byte, encFilename string, decFilename string, iv []byte) *os.File {
 
