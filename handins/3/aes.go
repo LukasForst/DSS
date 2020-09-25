@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"os"
 )
 
 type File struct {
@@ -15,29 +16,51 @@ type File struct {
 }
 
 //Write ciphertext to given file
-func EncryptToFile(key []byte, filename string, iv []byte) string {
+func EncryptToFile(key []byte, inputFilename string, encFilename string, iv []byte) *os.File {
 
-	var fileContent string //read filecontent from file
+	//var fileContent string //read filecontent from file
+
+	inputFile, err := os.Open(inputFilename)
+
+	if err != nil {
+		panic(fmt.Sprintf("Input file could not be openend: ", inputFilename))
+	}
+
+	defer inputFile.Close()
 
 	block, err := aes.NewCipher([]byte(key))
 	if err != nil {
-		//panic()
+		panic(fmt.Sprintf("Cipher could not be created"))
 	}
 
-	ciphertext := make([]byte, aes.BlockSize+len(fileContent))
+	//ciphertext := make([]byte, aes.BlockSize+len(fileContent))
 
 	stream := cipher.NewCTR(block, iv)
-	stream.XORKeyStream(ciphertext[aes.BlockSize:], []byte(fileContent))
+	//stream.XORKeyStream(ciphertext[aes.BlockSize:], []byte(fileContent))
 
-	fileContent = hex.EncodeToString(ciphertext)
+	outputFile, err := os.OpenFile(encFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 
-	return fileContent
+	if err != nil {
+		panic(fmt.Sprintf("Encoded file could not be created: ", encFilename))
+	}
+
+	defer outputFile.Close()
+
+	writer := &cipher.StreamWriter{S: stream, W: outputFile}
+
+	if _, err := io.Copy(writer, inputFile); err != nil {
+		panic(fmt.Sprintf("Creation of output file and encryption was not successful."))
+	}
+
+	//fileContent = hex.EncodeToString(ciphertext)
+
+	return outputFile
 }
 
 //Decrypt ciphertext from file and output plaintext
-func DecryptFromFile(key []byte, filename string, iv []byte) string {
+func DecryptFromFile(key []byte, string, iv []byte) string {
 
-	var fileContent string //read filecontent from file
+	//var fileContent string //read filecontent from file
 
 	ciphertext, _ := hex.DecodeString(fileContent)
 	block, err := aes.NewCipher([]byte(key))
