@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 )
 
@@ -21,6 +22,7 @@ func EncryptToFile(key []byte, inputFilename string, encFilename string, iv []by
 	//var fileContent string //read filecontent from file
 
 	inputFile, err := os.Open(inputFilename)
+	data, err := ioutil.ReadAll(inputFile)
 
 	if err != nil {
 		panic(fmt.Sprintf("Input file could not be openend: ", inputFilename))
