@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -17,88 +18,64 @@ type File struct {
 
 //Encrypt plaintext in given input file and write encrypted ciphertext to encrypted file
 
-func EncryptToFile(key []byte, inputFilename string, encFilename string, iv []byte) *os.File {
-
-	//var fileContent string //read filecontent from file
+func EncryptToFile(key []byte, inputFilename string, encFilename string) {
 
 	inputFile, err := os.Open(inputFilename)
-	data, err := ioutil.ReadAll(inputFile)
-
 	if err != nil {
 		panic(fmt.Sprintf("Input file could not be openend: ", inputFilename))
 	}
-
 	defer inputFile.Close()
+	plaintext, err := ioutil.ReadAll(inputFile)
 
-	block, err := aes.NewCipher([]byte(key))
+	block, err := aes.NewCipher(key)
 	if err != nil {
 		panic(fmt.Sprintf("Cipher could not be created"))
 	}
 
-	//ciphertext := make([]byte, aes.BlockSize+len(fileContent))
+	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
+	iv := ciphertext[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		panic(err)
+	}
 
 	stream := cipher.NewCTR(block, iv)
-	//stream.XORKeyStream(ciphertext[aes.BlockSize:], []byte(fileContent))
+	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
 
-	outputFile, err := os.OpenFile(encFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
-
+	outputFile, err := os.Create(encFilename)
 	if err != nil {
 		panic(fmt.Sprintf("Encoded file could not be created: ", encFilename))
 	}
-
 	defer outputFile.Close()
-
-	writer := &cipher.StreamWriter{S: stream, W: outputFile}
-
-	if _, err := io.Copy(writer, inputFile); err != nil {
-		panic(fmt.Sprintf("Creation of encrypted output file was not successful."))
-	}
-
-	//fileContent = hex.EncodeToString(ciphertext)
-
-	return outputFile
+	_, err = outputFile.Write(ciphertext)
 }
 
 //Decrypt cyphertext in given encrypted file and write decrypted plaintext to decrypted file
 
-func DecryptFromFile(key []byte, encFilename string, decFilename string, iv []byte) *os.File {
-
-	//var fileContent string //read filecontent from file
-
+func DecryptFromFile(key []byte, encFilename string, decFilename string) {
 	inputFile, err := os.Open(encFilename)
-
 	if err != nil {
 		panic(fmt.Sprintf("Encrypted file could not be opened: ", encFilename))
 	}
-
 	defer inputFile.Close()
 
-	//ciphertext, _ := hex.DecodeString(fileContent)
-	block, err := aes.NewCipher([]byte(key))
+	ciphertext, err := ioutil.ReadAll(inputFile)
+
+	block, err := aes.NewCipher(key)
 	if err != nil {
 		panic(fmt.Sprintf("Cipher could not be created"))
 	}
 
-	//ciphertext = ciphertext[aes.BlockSize:]
-	// if len(ciphertext)%aes.BlockSize != 0 {
-	// 	panic("Ciphertext length is not a multiple of the cipher block size.")
-	// }
-
+	plaintext := make([]byte, len(ciphertext)-aes.BlockSize)
+	iv := ciphertext[:aes.BlockSize]
 	stream := cipher.NewCTR(block, iv)
-	//stream.XORKeyStream(ciphertext, ciphertext)
-	//fileContent = string(ciphertext[:])
-	outputFile, err := os.OpenFile(decFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	stream.XORKeyStream(plaintext, ciphertext[aes.BlockSize:])
+
+	outputFile, err := os.Create(decFilename)
 	if err != nil {
-		panic(fmt.Sprintf("Decoded file could not be created: ", decFilename))
+		panic(fmt.Sprintf("Encoded file could not be created: ", encFilename))
 	}
 	defer outputFile.Close()
-
-	reader := &cipher.StreamReader{S: stream, R: inputFile}
-	if _, err := io.Copy(outputFile, reader); err != nil {
-		panic(fmt.Sprintf("Creation of decrypted output file was not successful."))
-	}
-
-	return outputFile
+	_, err = outputFile.Write(plaintext)
 }
 
 //generate 32 byte random key
@@ -123,24 +100,16 @@ func IVGen() []byte {
 
 func main() {
 
-	key := AesKeyGen()
+	key, _ := hex.DecodeString("6368616e676520746869732070617373")
 
-	inputFilename := ""
-	encFilename := ""
-	decFilename := ""
+	inputFilename := "hello.txt"
+	encFilename := "hello.enc.txt"
+	decFilename := "hello.dec.txt"
 
-	iv := IVGen()
-
-	// if len(plaintext)%aes.BlockSize != 0 {
-	// 	//panic or do padding?
-	// }
-
-	//fmt.Println("Original Plaintext:", plaintext)
-
-	EncryptToFile(key, inputFilename, encFilename, iv)
+	EncryptToFile(key, inputFilename, encFilename)
 	//fmt.Println("Encrypted ciphertext: ", ciphertext)
 
-	DecryptFromFile(key, encFilename, decFilename, iv)
+	DecryptFromFile(key, encFilename, decFilename)
 	//fmt.Println("Decrypted Plaintext: ", decryptedText)
 
 }
