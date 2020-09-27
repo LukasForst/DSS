@@ -4,17 +4,11 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 )
-
-type File struct {
-	filename string
-	content  string
-}
 
 //Encrypt plaintext in given input file and write encrypted ciphertext to encrypted file
 
@@ -83,33 +77,21 @@ func AesKeyGen() []byte {
 	key := make([]byte, 32)
 	_, err := rand.Read(key)
 	if err != nil {
-		//panic(fmt.Sprintf())
+		panic(fmt.Sprintf("AES key could not be generated."))
 	}
 	return key
 }
 
-//geerate the IV nonce
-func IVGen() []byte {
-	iv := make([]byte, aes.BlockSize)
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		panic(fmt.Sprintf("IV could not be created."))
-	}
-	return iv
+// func main() {
 
-}
+// 	key, _ := hex.DecodeString("6368616e676520746869732070617373")
 
-func main() {
+// 	inputFilename := "hello.txt"
+// 	encFilename := "hello.enc.txt"
+// 	decFilename := "hello.dec.txt"
 
-	key, _ := hex.DecodeString("6368616e676520746869732070617373")
+// 	EncryptToFile(key, inputFilename, encFilename)
 
-	inputFilename := "hello.txt"
-	encFilename := "hello.enc.txt"
-	decFilename := "hello.dec.txt"
+// 	DecryptFromFile(key, encFilename, decFilename)
 
-	EncryptToFile(key, inputFilename, encFilename)
-	//fmt.Println("Encrypted ciphertext: ", ciphertext)
-
-	DecryptFromFile(key, encFilename, decFilename)
-	//fmt.Println("Decrypted Plaintext: ", decryptedText)
-
-}
+// }
