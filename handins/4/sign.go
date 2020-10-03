@@ -5,10 +5,14 @@ import (
 	"math/big"
 )
 
+func Sha256(data []byte) []byte {
+	sha := sha256.Sum256(data)
+	return sha[:]
+}
+
 // compute sha
 func Sha256AsInt(data []byte) *big.Int {
-	sha := sha256.Sum256(data)
-	return BytesToInt(sha[:])
+	return BytesToInt(Sha256(data))
 }
 
 // convert sha to bigint
@@ -20,8 +24,14 @@ func BytesToInt(data []byte) *big.Int {
 
 // generates fixed size signature
 // size of the signature is size in bytes if the Key.n
-func (k *Key) GetSignature(data []byte) []byte {
-	sha := Sha256AsInt(data)
+func (k *Key) SignatureForData(data []byte) []byte {
+	return k.SignatureForHash(Sha256(data))
+}
+
+// generates fixed size signature
+// size of the signature is size in bytes if the Key.n
+func (k *Key) SignatureForHash(hash []byte) []byte {
+	sha := BytesToInt(hash)
 	// encrypt sha
 	encrypted := k.Encrypt(sha)
 	encryptedBytes := encrypted.Bytes()
