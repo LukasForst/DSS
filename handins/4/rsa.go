@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"fmt"
 	"math/big"
 )
@@ -60,31 +61,54 @@ func GeneratePrime(k int) (*big.Int, *big.Int) {
 	return p, pp
 }
 
+func Sha256(data []byte) []byte {
+	sh := sha256.Sum256(data)
+	return sh[:]
+}
+
+func BytesToInt(data []byte) *big.Int {
+	i := new(big.Int)
+	i.SetBytes(data)
+	return i
+}
+
+func (k *Key) GetSignature(data []byte) []byte {
+	sha := Sha256(data)
+	i := BytesToInt(sha)
+	encrypted := k.Encrypt(i)
+	return encrypted.Bytes()
+}
+
+func (k *Key) CheckSignature(data []byte, signature []byte) bool {
+	sha := Sha256(data)
+	i := BytesToInt(sha)
+	s := BytesToInt(signature)
+	ds := k.Decrypt(s)
+	return i.Cmp(ds) == 0
+}
+
 func main() {
 	keyBits := 2048
 
 	// generate key
 	key := KeyGen(keyBits)
+	var signature []byte
+	var data []byte
+	rounds := 1000
+	for i := 0; i < rounds; i++ {
+		randInt, _ := rand.Int(rand.Reader, big.NewInt(1000000000000000000))
+		data = randInt.Bytes()
 
-	// assert key length
-	if key.n.BitLen() != keyBits {
-		panic(fmt.Sprintf("Key bits are wrong! Expecting %d, was %d", keyBits, key.n.BitLen()))
-	} else {
-		fmt.Printf("Key has correct size of %d\n", keyBits)
-	}
-
-	// run the tests
-	max := big.NewInt(100000)
-	times := 1000
-	fmt.Printf("Executing enc/dec tests, rounds: %d\n", times)
-	for i := 0; i < times; i++ {
-		num, _ := rand.Int(rand.Reader, max)
-		numE := key.Encrypt(num)
-		numD := key.Decrypt(numE)
-		// assert num == numD
-		if num.Cmp(numD) != 0 {
-			panic(fmt.Sprintf("Decryption failed! Expecting %s, was %s", num.String(), numD.String()))
+		signature = key.GetSignature(data)
+		if !key.CheckSignature(data, signature) {
+			panic("Same data has different signature!")
+		}
+		data[0] = data[0] + 1
+		if key.CheckSignature(data, signature) {
+			panic("Different data has same signature!")
+		}
+		if i%(rounds/100) == 0 {
+			fmt.Printf("Round %d/100 OK\n", 100*i/rounds)
 		}
 	}
-	fmt.Println("All tests passed!")
 }
