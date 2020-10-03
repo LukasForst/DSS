@@ -2,8 +2,6 @@ package main
 
 import (
 	"crypto/rand"
-	"crypto/sha256"
-	"fmt"
 	"math/big"
 )
 
@@ -59,56 +57,4 @@ func GeneratePrime(k int) (*big.Int, *big.Int) {
 		gcd.GCD(nil, nil, e, pp)
 	}
 	return p, pp
-}
-
-func Sha256(data []byte) []byte {
-	sh := sha256.Sum256(data)
-	return sh[:]
-}
-
-func BytesToInt(data []byte) *big.Int {
-	i := new(big.Int)
-	i.SetBytes(data)
-	return i
-}
-
-func (k *Key) GetSignature(data []byte) []byte {
-	sha := Sha256(data)
-	i := BytesToInt(sha)
-	encrypted := k.Encrypt(i)
-	return encrypted.Bytes()
-}
-
-func (k *Key) CheckSignature(data []byte, signature []byte) bool {
-	sha := Sha256(data)
-	i := BytesToInt(sha)
-	s := BytesToInt(signature)
-	ds := k.Decrypt(s)
-	return i.Cmp(ds) == 0
-}
-
-func main() {
-	keyBits := 2048
-
-	// generate key
-	key := KeyGen(keyBits)
-	var signature []byte
-	var data []byte
-	rounds := 1000
-	for i := 0; i < rounds; i++ {
-		randInt, _ := rand.Int(rand.Reader, big.NewInt(1000000000000000000))
-		data = randInt.Bytes()
-
-		signature = key.GetSignature(data)
-		if !key.CheckSignature(data, signature) {
-			panic("Same data has different signature!")
-		}
-		data[0] = data[0] + 1
-		if key.CheckSignature(data, signature) {
-			panic("Different data has same signature!")
-		}
-		if i%(rounds/100) == 0 {
-			fmt.Printf("Round %d/100 OK\n", 100*i/rounds)
-		}
-	}
 }
