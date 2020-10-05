@@ -10,7 +10,7 @@ Answers to the questions in the [test.go](test.go).
 > One of these solutions fails to satisfy the security policy. Which one, and why? 
 
 The solution where you first encrypt and then sign the encrypted data. 
-The signature does not prove that the sender was aware of the context of the plaintext, thus it violates non-repudiation.
+The signature does not prove that the sender was aware of the context of the plaintext, thus it violates non-repudiation. Like that the database D will not be able to determine which user sent the request originally, if a user signs an encrypted request which was originally from another user.
 
 > are there any general conclusions one could draw from this example?
 
