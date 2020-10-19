@@ -17,4 +17,4 @@ The second specification of the security policy, which states that users can not
 > are there any general conclusions one could draw from this example?
 
 The example shows that it is important to sign and then encrypt the requests, since the signatures could otherwise be manipulated.
-This also applies generally for the use of RSA encryption to ensure secure communication.
+This also applies generally for the use of RSA encryption to ensure secure communication. So to sum it up, it's always important to sing the plaintext instead of ciphertext.
