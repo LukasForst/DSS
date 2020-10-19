@@ -9,12 +9,13 @@ Answers to the questions in the [test.go](test.go).
 ## 6.1
 > One of these solutions fails to satisfy the security policy. Which one, and why? 
 
-The solution where you first encrypt and then sign the encrypted data. 
-The signature does not prove that the sender was aware of the context of the plaintext, thus it violates non-repudiation. Like that the database D will not be able to determine which user sent the request originally, if a user signs an encrypted request which was originally from another user.
+The first suggestion, which proposes encrypt and then sign, fails the given security policy.
+In contrast to the second suggestion, which proposes signing and then encryption, in the first suggestion the signature is not being encrypted. With this procedure it would be possibe for another user B to manipulate a request send by user A such that user B appends his own signature and username on the request originally sent by user A. This possibility violates the first specification of the security policy, which states that the database D has to be able to determine which user sent the request. If a user B manipulates the request originally sent by user A, the database can not correctly determine the sender of the request anymore, as it would determine user B as the sender. This would not be possible in the second suggestion (sign-then-enc). 
+Furthermore, as in the first suggestion (enc-then-sign) user B can see the signature A provided with his private key, user B could now create messages, encrypt them with A's public key and append user A's signature that he knows to them, as well as A's username, which again fails the first specification of the security property, the explicit determination of the sender of a request by database D.
+Like this, the database could treat the request as a valid request and return an answer with the requested data, encrypted under A's public key. Since B doesn't know A's private key, he can not decrypt this data though.
+The second specification of the security policy, which states that users can not get information about other users requests, is therefore not broken, as user B does not know user A's secret key, which makes it impossible to decrypt answers the database returns to A, and also it is not possible for B to decrypt the sepcific request that A sent.
 
 > are there any general conclusions one could draw from this example?
 
-Yes, the following reasoning:
-> The signature does not prove that the sender was aware of the context of the plaintext, thus it violates non-repudiation.
-
-is general. As the main reason why we sign the data is to ensure non-repudiation, the signing itself is useless.
+The example shows that it is important to sign and then encrypt the requests, since the signatures could otherwise be manipulated.
+This also applies generally for the use of RSA encryption to ensure secure communication.
