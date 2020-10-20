@@ -13,6 +13,9 @@ On input _(bid, P<sub>i</sub>, m)_ and _Cast<sub>i</sub>_ do as follows:
 - Send _(bid, P<sub>i</sub>, m, SigSet)_ to all parties
 
 
+⊥
+
+
 ### Relay:
 In round _r_ for node P<sub>j</sub> with input _(bid, P<sub>i</sub>, m, SigSet)_ do as follows:
 - if _P<sub>i</sub> = P<sub>j</sub>_ do nothing, you have received your own message
