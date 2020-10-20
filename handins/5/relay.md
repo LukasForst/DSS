@@ -80,3 +80,6 @@ In round _n+2_ with input _(bid, P<sub>i</sub>, m, SigSet)_ do as follows:
 - if there is one and only message _m_ such that _Relayed<sub>i</sub>(bid, m) = T_
 - then output _(bid, P<sub>i</sub>, m)_ on _Cast<sub>j</sub>_
 - else output _(bid, P<sub>i</sub>, NoMsg)_ on _Cast<sub>j</sub>_
+
+____
+The different approach would be to introduce an additional datastructure, that would verify that the _bid_, the party got, matches the _m_ if the party already saw the _bid_ in the past. If it saw the _bid_ previously and it does not match the previous _m_ it wouldn't do anything.
