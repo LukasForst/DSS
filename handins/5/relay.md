@@ -77,6 +77,7 @@ In round _r_ for node P<sub>j</sub> with input _(bid, P<sub>i</sub>, m, SigSet)_
 - compute _SigSet' <- SigSet U {o<sub>j</sub>}_
 - send _(bid, P<sub>i</sub>, m, SigSet')_ to all parties
 - set _Relayed<sub>j</sub> (bid, m) = T_
+- **set _Encountered<sub>i</sub>[bid] = m_**
 
 ### Output:
 In round _n+2_ with input _(bid, P<sub>i</sub>, m, SigSet)_ do as follows:
