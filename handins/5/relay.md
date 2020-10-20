@@ -1,3 +1,6 @@
+⊥
+
+
 ### Relay:
 In round _r_ for node P<sub>j</sub> with input _(bid, P<sub>i</sub>, m, SigSet)_ do as follows:
 - if _P<sub>i</sub> = P<sub>j</sub>_ do nothing, you have received your own message
