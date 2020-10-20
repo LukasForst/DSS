@@ -39,3 +39,6 @@ In round _n+2_ with input _(bid, P<sub>i</sub>, m, SigSet)_ do as follows:
 - else output _(bid, P<sub>i</sub>, NoMsg)_ on _Cast<sub>j</sub>_
 
 ## Modification to prevent DDoS attack by Byzantine corrupted sender
+We assume that the sender is byzantine corrupted and is sending a different message _m_ with the same broadcast id _bid_ and with a valid signature.
+
+Now, the original Dolev-Strong uses _Relayed<sub>i</sub>_, which stores _(bid, m)_. As the broadcast id is by definition unique for an unique message, we don't need to store both of the values - the _bid_ and the _m_, but instead we would store just the _bid_. Thus when the sender sends a different message _m_ with the same _bid_, the parties won't accept the message and wouldn't do anything.
