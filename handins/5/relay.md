@@ -51,7 +51,7 @@ Initialize for node _P<sub>i</sub>_
 - Queery toyPKI for the public key of all nodes _n_, _(vk<sub>1</sub>,...,vk<sub>n</sub>)_
 - Create a map _Relayed_<sub>i</sub>, where for all messages _m_ and all broadcast-ids _bid_:
 	- _Relayed<sub>i</sub>(bid,m) = ⊥_
-**- Create an empty map _Encountered<sub>i</sub>_ where we store a _bid_ for _m_**
+- **Create an empty map _Encountered<sub>i</sub>_ where we store a _bid_ for _m_**
 
 ### Broadcast:
 On input _(bid, P<sub>i</sub>, m)_ and _Cast<sub>i</sub>_ do as follows:
