@@ -86,4 +86,5 @@ In round _n+2_ with input _(bid, P<sub>i</sub>, m, SigSet)_ do as follows:
 - else output _(bid, P<sub>i</sub>, NoMsg)_ on _Cast<sub>j</sub>_
 
 ___
-From the security point of view, this change does not change the behavior of the algorithm.
+We assume that the original algorithm is secure, the security is mainly based on the signature chain of the message.
+The proposed solution does not infuence the signature change. If the message comes from the honest sender, the original algorothm flow is not altered - it even don't reach the step, of the _Encountered<sub>i</sub>[bid] = m_ check, because the flow is already stoped on the  _Relayed<sub>j</sub>(bid, m) = T_ step. 
