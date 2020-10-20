@@ -84,3 +84,6 @@ In round _n+2_ with input _(bid, P<sub>i</sub>, m, SigSet)_ do as follows:
 - if there is one and only message _m_ such that _Relayed<sub>i</sub>(bid, m) = T_
 - then output _(bid, P<sub>i</sub>, m)_ on _Cast<sub>j</sub>_
 - else output _(bid, P<sub>i</sub>, NoMsg)_ on _Cast<sub>j</sub>_
+
+___
+From the security point of view, this change does not change the behavior of the algorithm.
