@@ -1,3 +1,7 @@
+## Original Dolev-String
+Taken from an anonymous student from the [Blackboard Forum](https://blackboard.au.dk/webapps/discussionboard/do/message?action=list_messages&course_id=_138620_1&nav=discussion_board_entry&conf_id=_273509_1&forum_id=_189724_1&message_id=_291047_1).
+
+
 ### Initialize:
 Initialize for node _P<sub>i</sub>_
 - Query toyPKI for the private key _sk<sub>i</sub>_, the private key for _P<sub>i</sub>_
@@ -33,3 +37,5 @@ In round _n+2_ with input _(bid, P<sub>i</sub>, m, SigSet)_ do as follows:
 - if there is one and only message _m_ such that _Relayed<sub>i</sub>(bid, m) = T_
 - then output _(bid, P<sub>i</sub>, m)_ on _Cast<sub>j</sub>_
 - else output _(bid, P<sub>i</sub>, NoMsg)_ on _Cast<sub>j</sub>_
+
+## Modification to prevent DDoS attack by Byzantine corrupted sender
