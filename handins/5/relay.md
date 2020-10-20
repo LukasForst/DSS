@@ -44,7 +44,7 @@ We assume that the sender is byzantine corrupted and is sending a different mess
 Now, the original Dolev-Strong uses _Relayed<sub>i</sub>_, which stores _(bid, m)_. As the broadcast id is by definition unique for an unique message, we don't need to store both of the values - the _bid_ and the _m_, but instead we would store just the _bid_. Thus when the sender sends a different message _m_ with the same _bid_, the parties won't accept the message and wouldn't do anything.
 
 The modified version is then following:
-
+___
 #### Initialize:
 Initialize for node _P<sub>i</sub>_
 - Query toyPKI for the private key _sk<sub>i</sub>_, the private key for _P<sub>i</sub>_
