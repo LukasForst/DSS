@@ -35,6 +35,7 @@ func StartTest() {
 	stdinReader := bufio.NewReader(os.Stdin)
 	PrintStatus("Enter unique test peer ID")
 	testId, _ := stdinReader.ReadString('\n')
+	testId = strings.TrimSpace(testId)
 
 	PrintStatus("Enter IP address and the port of the peer.")
 	ipPort, _ := stdinReader.ReadString('\n')
@@ -60,15 +61,15 @@ func StartTest() {
 	PrintStatus("Pres enter to start the execution.")
 	_, _ = stdinReader.ReadString('\n')
 
-	transactions := 100
-	accounts := GenerateAccounts(10)
+	transactions := 10
+	accounts := GenerateAccounts(5)
 
 	for i := 0; i < transactions; i++ {
 		from := rand.Intn(len(accounts))
 		to := rand.Intn(len(accounts))
 
-		fromPk, _ := json.Marshal(accounts[from].PK.Public())
-		toPk, _ := json.Marshal(accounts[to].PK.Public())
+		fromPk, _ := json.Marshal(accounts[from].PK.PublicKey)
+		toPk, _ := json.Marshal(accounts[to].PK.PublicKey)
 
 		amount := rand.Intn(100)
 		accounts[from].expectedAmount = -amount
@@ -78,16 +79,18 @@ func StartTest() {
 			ID:     testId + strconv.Itoa(i),
 			From:   string(fromPk),
 			To:     string(toPk),
-			Amount: rand.Intn(100),
+			Amount: amount,
 		}
+		transaction.ComputeAndSetSignature(accounts[from].PK)
 
 		dto := MakeTransactionDto(&transaction)
 		if err := enc.Encode(dto); err != nil {
 			log.Fatal("Error while sending data -> " + err.Error())
 		}
 	}
+	log.Println("end")
 }
 
-//func main() {
-//	StartTest()
-//}
+func main() {
+	StartTest()
+}

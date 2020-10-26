@@ -92,6 +92,7 @@ func Startup() {
 	RunServer(&model)
 }
 
-func main() {
-	Startup()
-}
+//
+//func main() {
+//	Startup()
+//}

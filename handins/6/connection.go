@@ -59,10 +59,6 @@ func OnTransactionReceived(transaction *SignedTransaction, model *Model) {
 	if model.transactionsSeen[transactionID] == true {
 		return
 	} else {
-		// lock the ledger
-		model.ledger.lock.Lock()
-		defer model.ledger.lock.Unlock()
-
 		// perform the transaction
 		model.ledger.DoSignedTransaction(transaction)
 
