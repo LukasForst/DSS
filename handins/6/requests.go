@@ -50,7 +50,7 @@ func (l *Ledger) DoSignedTransaction(t *SignedTransaction) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 
-	if t.IsSignatureCorrect() {
+	if t.IsSignatureCorrect() && t.Amount >= 0 {
 		l.Accounts[t.From] -= t.Amount
 		l.Accounts[t.To] += t.Amount
 	}
