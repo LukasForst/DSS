@@ -1,6 +1,8 @@
 package main
 
-import "crypto/rsa"
+import (
+	"crypto/rsa"
+)
 
 type PresentDto struct {
 	Type string
@@ -53,17 +55,12 @@ type SignedTransaction struct {
 	Signature string // Potential signature coded as string
 }
 
-func (l *Ledger) SignedTransaction(t *SignedTransaction) {
+func (m *Model) SignedTransaction(t *SignedTransaction) {
+	l := &m.ledger
 	l.lock.Lock()
 	defer l.lock.Unlock()
-	/*
-	* We verify that the t.Signature is a valid RSA
-	* signature on the rest of the fields in t under
-	* the public key t.From.
-	 */
 
-	validSignature := true
-	if validSignature {
+	if t.IsSignatureCorrect() {
 		l.Accounts[t.From] -= t.Amount
 		l.Accounts[t.To] += t.Amount
 	}

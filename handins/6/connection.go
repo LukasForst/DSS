@@ -75,19 +75,19 @@ func OnTransactionReceived(transaction Transaction, model *Model) {
 
 func OnPresent(
 	objmap map[string]json.RawMessage,
-	newPeer string,
+	newPeer PeerId,
 	model *Model,
 ) {
 	added := model.AddNetworkPeer(newPeer)
 	if added {
-		PrintStatus("Peer joined: " + newPeer)
+		PrintStatus("Peer joined: " + newPeer.Address)
 		model.PrintPeers()
 		// broadcast the presence further in the network
 		model.BroadCastJson(objmap)
 	}
 }
 
-func OnPeersList(peers []string, model *Model) {
+func OnPeersList(peers []PeerId, model *Model) {
 	model.AddNetworkPeers(peers)
 	model.PrintPeers()
 }

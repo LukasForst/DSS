@@ -29,8 +29,11 @@ type Model struct {
 	mpMutex sync.RWMutex
 
 	// key: ip & port, value: is me?
-	peersList map[string]bool
+	// key: ip & port, value: PeerId
+	peersList map[string]PeerId
 	pMutex    sync.RWMutex
+
+	myAddress string
 
 	privateKey *rsa.PrivateKey
 
@@ -41,74 +44,87 @@ func MakeModel(pk *rsa.PrivateKey) Model {
 	return Model{
 		connections:      make(map[string]net.Conn),
 		transactionsSeen: make(map[string]bool),
-		peersList:        make(map[string]bool),
+		peersList:        make(map[string]PeerId),
 		ledger:           MakeLedger(),
+		myAddress:        "",
 		privateKey:       pk,
 	}
 }
 
 // returns true if it was added, or already existed
-func (m *Model) AddNetworkPeer(address string) bool {
+func (m *Model) AddNetworkPeer(peerId PeerId) bool {
 	m.pMutex.Lock()
 	defer m.pMutex.Unlock()
 
-	value, ok := m.peersList[address]
-	m.peersList[address] = ok && value
+	_, ok := m.peersList[peerId.Address]
+	// if does not exist
+	if !ok {
+		// add new zero record to the ledger
+		m.ledger.lock.Lock()
+		defer m.ledger.lock.Unlock()
+		// store key as json of public key of the peer
+		peerPKBytes, err := json.Marshal(peerId.PublicKey)
+		if err != nil {
+			panic(err)
+		}
+		// set 0 at the beginning
+		m.ledger.Accounts[string(peerPKBytes)] = 0
+		m.peersList[peerId.Address] = peerId
+	}
 	return !ok
 }
 
 // during the protocol warmup, nobody knows my own address
-func (m *Model) AddNetworkPeers(addresses []string) {
-	for _, address := range addresses {
-		m.AddNetworkPeer(address)
+func (m *Model) AddNetworkPeers(peerIds []PeerId) {
+	for _, peerId := range peerIds {
+		m.AddNetworkPeer(peerId)
 	}
 }
 
 // store server address in the peers list
 func (m *Model) RegisterMyAddress(address string) {
 	// this is sequential, no need for locking
-	m.peersList[address] = true
+	m.myAddress = address
+	m.AddNetworkPeer(PeerId{address, m.privateKey.PublicKey})
 }
 
 // returns sorted list of all peers
-func (m *Model) GetPeersList() []string {
+func (m *Model) GetPeersList() []PeerId {
 	m.pMutex.RLock()
 	defer m.pMutex.RUnlock()
+	// create sort list
+	peers := make([]PeerId, 0, len(m.peersList))
+	for _, peerId := range m.peersList {
+		peers = append(peers, peerId)
+	}
+	// TODO sort by address
+	//sort.Strings(peers)
+	return peers
+}
+
+// return array of all peers that are in the sorted list behind
+// current instance
+func (m *Model) SelectTopNAfterMe(n int) []PeerId {
+	m.pMutex.RLock()
+	defer m.pMutex.RUnlock()
+
+	if len(m.peersList) == 1 {
+		return make([]PeerId, 0, 0)
+	}
+	// remember who am I
+	me := m.myAddress
 	// create sort list
 	peers := make([]string, 0, len(m.peersList))
 	for address := range m.peersList {
 		peers = append(peers, address)
 	}
 	sort.Strings(peers)
-	return peers
-}
-
-// return array of all peers that are in the sorted list behind
-// current instance
-func (m *Model) SelectTopNAfterMe(n int) []string {
-	m.pMutex.RLock()
-	defer m.pMutex.RUnlock()
-
-	if len(m.peersList) == 1 {
-		return make([]string, 0, 0)
-	}
-	// remember who am I
-	var me string
-	// create sort list
-	peers := make([]string, 0, len(m.peersList))
-	for address, isMe := range m.peersList {
-		if isMe {
-			me = address
-		}
-		peers = append(peers, address)
-	}
-	sort.Strings(peers)
 	// find me
 	idx := sort.SearchStrings(peers, me)
 	// select 10 after me, maybe less
-	fSelection := make([]string, 1, Min(len(peers)-idx, n))
+	fSelection := make([]PeerId, 1, Min(len(peers)-idx, n))
 	for i := 0; i < len(fSelection); i++ {
-		fSelection[i] = peers[(i+idx+1)%len(peers)]
+		fSelection[i] = m.peersList[peers[(i+idx+1)%len(peers)]]
 	}
 	return fSelection
 }
@@ -148,5 +164,9 @@ func (m *Model) BroadCastJson(v interface{}) {
 
 // print all peers to the console
 func (m *Model) PrintPeers() {
-	PrintStatus("Peers: " + strings.Join(m.GetPeersList(), ", "))
+	selection := make([]string, 0, len(m.peersList))
+	for _, peerId := range m.GetPeersList() {
+		selection = append(selection, peerId.Address)
+	}
+	PrintStatus("Peers: " + strings.Join(selection, ", "))
 }
