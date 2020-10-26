@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"crypto/rand"
+	"crypto/rsa"
 	"encoding/json"
 	"log"
 	"net"
@@ -39,7 +41,7 @@ func RunServer(model *Model) {
 	// connect to neighborhood
 	ConnectToNeighborhood(model)
 	// broadcast presence
-	go model.BroadCastJson(MakePresent(ipAndPort))
+	go model.BroadCastJson(MakePresent(PeerId{ipAndPort, model.privateKey.PublicKey}))
 
 	// listen
 	for {
@@ -74,7 +76,8 @@ func InitialConnection(conn net.Conn, model *Model) {
 }
 
 func Startup() {
-	model := MakeModel()
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	model := MakeModel(privateKey)
 
 	PrintStatus("Enter IP address and the port of the peer.")
 	stdinReader := bufio.NewReader(os.Stdin)

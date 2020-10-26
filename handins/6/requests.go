@@ -1,22 +1,29 @@
 package main
 
+import "crypto/rsa"
+
 type PresentDto struct {
 	Type string
-	// name of the server
-	Data string
+	Data PeerId
 }
 
-func MakePresent(address string) PresentDto {
-	return PresentDto{Type: "present", Data: address}
+type PeerId struct {
+	// name of the server
+	Address   string
+	PublicKey rsa.PublicKey
+}
+
+func MakePresent(id PeerId) PresentDto {
+	return PresentDto{Type: "present", Data: id}
 }
 
 type PeersListDto struct {
 	Type string
 	// names of the servers
-	Data []string
+	Data []PeerId
 }
 
-func MakePeersList(data []string) PeersListDto {
+func MakePeersList(data []PeerId) PeersListDto {
 	return PeersListDto{Type: "peers-list", Data: data}
 }
 
@@ -28,30 +35,14 @@ func MakePeersRequest() PeersRequestDto {
 	return PeersRequestDto{Type: "peers-request"}
 }
 
-// type given from the book
-type Transaction struct {
-	ID     string
-	From   string
-	To     string
-	Amount int
-}
-
 // data transfer object for transaction
 type TransactionDto struct {
 	Type string
-	Data Transaction
+	Data SignedTransaction
 }
 
-func MakeTransactionDto(transaction Transaction) TransactionDto {
+func MakeTransactionDto(transaction SignedTransaction) TransactionDto {
 	return TransactionDto{Type: "transaction", Data: transaction}
-}
-
-func (l *Ledger) DoTransaction(t Transaction) {
-	l.lock.Lock()
-	defer l.lock.Unlock()
-
-	l.Accounts[t.From] -= t.Amount
-	l.Accounts[t.To] += t.Amount
 }
 
 type SignedTransaction struct {
@@ -65,10 +56,12 @@ type SignedTransaction struct {
 func (l *Ledger) SignedTransaction(t *SignedTransaction) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
-	/* We verify that the t.Signature is a valid RSA
+	/*
+	* We verify that the t.Signature is a valid RSA
 	* signature on the rest of the fields in t under
 	* the public key t.From.
 	 */
+
 	validSignature := true
 	if validSignature {
 		l.Accounts[t.From] -= t.Amount

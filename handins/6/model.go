@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/rsa"
 	"encoding/json"
 	"log"
 	"net"
@@ -31,15 +32,18 @@ type Model struct {
 	peersList map[string]bool
 	pMutex    sync.RWMutex
 
+	privateKey *rsa.PrivateKey
+
 	ledger Ledger
 }
 
-func MakeModel() Model {
+func MakeModel(pk *rsa.PrivateKey) Model {
 	return Model{
 		connections:      make(map[string]net.Conn),
 		transactionsSeen: make(map[string]bool),
 		peersList:        make(map[string]bool),
 		ledger:           MakeLedger(),
+		privateKey:       pk,
 	}
 }
 
