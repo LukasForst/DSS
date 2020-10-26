@@ -38,10 +38,10 @@ func MakePeersRequest() PeersRequestDto {
 // data transfer object for transaction
 type TransactionDto struct {
 	Type string
-	Data SignedTransaction
+	Data *SignedTransaction
 }
 
-func MakeTransactionDto(transaction SignedTransaction) TransactionDto {
+func MakeTransactionDto(transaction *SignedTransaction) TransactionDto {
 	return TransactionDto{Type: "transaction", Data: transaction}
 }
 

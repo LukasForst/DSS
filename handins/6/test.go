@@ -37,7 +37,7 @@ func StartTest() {
 		log.Fatal("It was not possible to connect to the first peer! ->" + err.Error())
 	}
 
-	PrintStatus("Pres enter to start the execution.")
+	PrintStatus("Press enter to start the execution.")
 	_, _ = stdinReader.ReadString('\n')
 
 	transactions := 100
@@ -45,7 +45,7 @@ func StartTest() {
 		from := rand.Intn(len(peers.Data))
 		to := rand.Intn(len(peers.Data))
 
-		transaction := Transaction{
+		transaction := SignedTransaction{
 			ID:     testId + strconv.Itoa(i),
 			From:   peers.Data[from],
 			To:     peers.Data[to],
