@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type PresentDto struct {
 	Type string
 	// name of the server
@@ -50,8 +52,16 @@ func (l *Ledger) DoSignedTransaction(t *SignedTransaction) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 
-	if t.IsSignatureCorrect() && t.Amount >= 0 {
+	if !t.IsSignatureCorrect() {
+		PrintStatus("Transaction " + t.ID + " has incorrect signature!")
+	} else if t.Amount < 0 {
+		PrintStatus("Transaction " + t.ID + " has incorrect negative amount!")
+	} else {
 		l.Accounts[t.From] -= t.Amount
 		l.Accounts[t.To] += t.Amount
+		msg := fmt.Sprintf(
+			"Transaction %s performed:\nFrom:\n%s\nTo:\n%s\nAmount: %d",
+			t.ID, t.From, t.To, t.Amount)
+		PrintStatus(msg)
 	}
 }
