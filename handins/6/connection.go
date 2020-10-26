@@ -52,7 +52,7 @@ func OnTransactionReceived(transaction *SignedTransaction, model *Model) {
 	//check whether we already did the transaction by checking the transaction ID
 
 	transactionID := transaction.ID
-
+	PrintStatus("Transaction " + transactionID + " received.")
 	// If we already did the transaction, return
 	model.mpMutex.Lock()
 	defer model.mpMutex.Unlock()
@@ -71,7 +71,6 @@ func OnTransactionReceived(transaction *SignedTransaction, model *Model) {
 
 		// propagate transaction
 		model.BroadCastJson(MakeTransactionDto(transaction))
-
 	}
 }
 
