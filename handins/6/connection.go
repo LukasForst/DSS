@@ -54,6 +54,8 @@ func OnTransactionReceived(transaction *SignedTransaction, model *Model) {
 	transactionID := transaction.ID
 
 	// If we already did the transaction, return
+	model.mpMutex.Lock()
+	defer model.mpMutex.Unlock()
 	if model.transactionsSeen[transactionID] == true {
 		return
 	} else {

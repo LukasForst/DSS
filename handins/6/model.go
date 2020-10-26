@@ -24,8 +24,7 @@ type Model struct {
 
 	//key: transaction ID, value: seen before?
 	transactionsSeen map[string]bool
-
-	mpMutex sync.RWMutex
+	mpMutex          sync.RWMutex
 
 	// key: ip & port, value: is me?
 	peersList map[string]bool
