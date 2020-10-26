@@ -1,31 +1,22 @@
 package main
 
-import (
-	"crypto/rsa"
-)
-
 type PresentDto struct {
 	Type string
-	Data PeerId
-}
-
-type PeerId struct {
 	// name of the server
-	Address   string
-	PublicKey rsa.PublicKey
+	Data string
 }
 
-func MakePresent(id PeerId) PresentDto {
-	return PresentDto{Type: "present", Data: id}
+func MakePresent(address string) PresentDto {
+	return PresentDto{Type: "present", Data: address}
 }
 
 type PeersListDto struct {
 	Type string
 	// names of the servers
-	Data []PeerId
+	Data []string
 }
 
-func MakePeersList(data []PeerId) PeersListDto {
+func MakePeersList(data []string) PeersListDto {
 	return PeersListDto{Type: "peers-list", Data: data}
 }
 
@@ -43,8 +34,8 @@ type TransactionDto struct {
 	Data SignedTransaction
 }
 
-func MakeTransactionDto(transaction SignedTransaction) TransactionDto {
-	return TransactionDto{Type: "transaction", Data: transaction}
+func MakeTransactionDto(transaction *SignedTransaction) TransactionDto {
+	return TransactionDto{Type: "transaction", Data: *transaction}
 }
 
 type SignedTransaction struct {
@@ -55,8 +46,7 @@ type SignedTransaction struct {
 	Signature string // Potential signature coded as string
 }
 
-func (m *Model) SignedTransaction(t *SignedTransaction) {
-	l := &m.ledger
+func (l *Ledger) DoSignedTransaction(t *SignedTransaction) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 

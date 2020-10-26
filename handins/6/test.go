@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	cryptoRand "crypto/rand"
+	"crypto/rsa"
 	"encoding/json"
 	"log"
 	"math/rand"
@@ -10,6 +12,24 @@ import (
 	"strconv"
 	"strings"
 )
+
+type Account struct {
+	PK             *rsa.PrivateKey
+	expectedAmount int
+}
+
+func GenerateAccounts(count int) []Account {
+	accounts := make([]Account, 0, count)
+	for i := 0; i < count; i++ {
+		privateKey, err := rsa.GenerateKey(cryptoRand.Reader, 2048)
+		if err != nil {
+			panic(err)
+		}
+		acc := Account{privateKey, 0}
+		accounts = append(accounts, acc)
+	}
+	return accounts
+}
 
 func StartTest() {
 	stdinReader := bufio.NewReader(os.Stdin)
@@ -41,18 +61,27 @@ func StartTest() {
 	_, _ = stdinReader.ReadString('\n')
 
 	transactions := 100
-	for i := 0; i < transactions; i++ {
-		from := rand.Intn(len(peers.Data))
-		to := rand.Intn(len(peers.Data))
+	accounts := GenerateAccounts(10)
 
-		transaction := Transaction{
+	for i := 0; i < transactions; i++ {
+		from := rand.Intn(len(accounts))
+		to := rand.Intn(len(accounts))
+
+		fromPk, _ := json.Marshal(accounts[from].PK.Public())
+		toPk, _ := json.Marshal(accounts[to].PK.Public())
+
+		amount := rand.Intn(100)
+		accounts[from].expectedAmount = -amount
+		accounts[to].expectedAmount = +amount
+
+		transaction := SignedTransaction{
 			ID:     testId + strconv.Itoa(i),
-			From:   peers.Data[from],
-			To:     peers.Data[to],
+			From:   string(fromPk),
+			To:     string(toPk),
 			Amount: rand.Intn(100),
 		}
 
-		dto := MakeTransactionDto(transaction)
+		dto := MakeTransactionDto(&transaction)
 		if err := enc.Encode(dto); err != nil {
 			log.Fatal("Error while sending data -> " + err.Error())
 		}

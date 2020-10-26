@@ -39,16 +39,16 @@ func OnNewConnection(conn net.Conn, model *Model) {
 			OnPresent(objmap, UnmarshalString(payload), model)
 		// new transaction in the system
 		case "transaction":
-			var transaction Transaction
+			var transaction SignedTransaction
 			if err := json.Unmarshal(payload, &transaction); err != nil {
 				log.Fatal("It was not possible to parse transaction object.")
 			}
-			OnTransactionReceived(transaction, model)
+			OnTransactionReceived(&transaction, model)
 		}
 	}
 }
 
-func OnTransactionReceived(transaction Transaction, model *Model) {
+func OnTransactionReceived(transaction *SignedTransaction, model *Model) {
 	//check whether we already did the transaction by checking the transaction ID
 
 	transactionID := transaction.ID
@@ -62,7 +62,7 @@ func OnTransactionReceived(transaction Transaction, model *Model) {
 		defer model.ledger.lock.Unlock()
 
 		// perform the transaction
-		model.ledger.DoTransaction(transaction)
+		model.ledger.DoSignedTransaction(transaction)
 
 		//register Transaction as seen
 		model.transactionsSeen[transactionID] = true
@@ -75,19 +75,19 @@ func OnTransactionReceived(transaction Transaction, model *Model) {
 
 func OnPresent(
 	objmap map[string]json.RawMessage,
-	newPeer PeerId,
+	newPeer string,
 	model *Model,
 ) {
 	added := model.AddNetworkPeer(newPeer)
 	if added {
-		PrintStatus("Peer joined: " + newPeer.Address)
+		PrintStatus("Peer joined: " + newPeer)
 		model.PrintPeers()
 		// broadcast the presence further in the network
 		model.BroadCastJson(objmap)
 	}
 }
 
-func OnPeersList(peers []PeerId, model *Model) {
+func OnPeersList(peers []string, model *Model) {
 	model.AddNetworkPeers(peers)
 	model.PrintPeers()
 }
