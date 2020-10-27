@@ -57,11 +57,14 @@ func (l *Ledger) DoSignedTransaction(t *SignedTransaction) {
 	} else if t.Amount < 0 {
 		PrintStatus("Transaction " + t.ID + " has incorrect negative amount!")
 	} else {
+		PrintStatus(fmt.Sprintf("Sender Balance: %d", l.Accounts[t.From]))
+		PrintStatus(fmt.Sprintf("Recipient Balance: %d", l.Accounts[t.To]))
+
 		l.Accounts[t.From] -= t.Amount
 		l.Accounts[t.To] += t.Amount
-		msg := fmt.Sprintf(
-			"Transaction %s performed:\nFrom:\n%s\nTo:\n%s\nAmount: %d",
-			t.ID, t.From, t.To, t.Amount)
-		PrintStatus(msg)
+
+		PrintStatus(fmt.Sprintf("Transaction %s performed - amount: %d", t.ID, t.Amount))
+		PrintStatus(fmt.Sprintf("Sender Balance: %d", l.Accounts[t.From]))
+		PrintStatus(fmt.Sprintf("Recipient Balance: %d", l.Accounts[t.To]))
 	}
 }

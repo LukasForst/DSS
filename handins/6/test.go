@@ -88,9 +88,10 @@ func StartTest() {
 			log.Fatal("Error while sending data -> " + err.Error())
 		}
 	}
+	// manually check how do the amounts look like
 	log.Println("end")
 }
 
-func main() {
-	StartTest()
-}
+//func main() {
+//	StartTest()
+//}
