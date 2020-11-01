@@ -50,6 +50,6 @@ func WeakPasswordScenario() {
 
 func main() {
 	HappyScenario()
-	WeakPasswordScenario()
-	WrongPasswordScenario()
+	//WeakPasswordScenario()
+	//WrongPasswordScenario()
 }
