@@ -40,7 +40,16 @@ func WrongPasswordScenario() {
 	panic("The code should not end up here! It means that Sign was successful.")
 }
 
+func WeakPasswordScenario() {
+	password := "Password"
+	filename := "secret.enc"
+	// generate key
+	Generate(filename, password)
+	panic("The code should not end up here! It means that Generate was successful.")
+}
+
 func main() {
 	HappyScenario()
+	WeakPasswordScenario()
 	WrongPasswordScenario()
 }

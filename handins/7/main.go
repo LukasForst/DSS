@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"time"
 )
 
@@ -12,6 +13,7 @@ import (
 // encrypted by AES-256 GCM, under given password
 // returns base64 encoded PublicKey
 func Generate(filename string, password string) string {
+	EnsurePasswordComplexity(password)
 	// generate new RSA key
 	key := KeyGen(2048)
 	// encode PK in base64, it is then returned to the user
@@ -33,6 +35,22 @@ func Sign(filename string, password string, msg []byte) Signature {
 
 type Signature struct {
 	Signature []byte
+}
+
+// minimum eight characters,
+// at least one uppercase letter,
+// one lowercase letter and one number
+func EnsurePasswordComplexity(password string) {
+	passwordLen := len(password) >= 8
+	numberMatch, _ := regexp.MatchString("[0-9]", password)
+	capitalCaseMatch, _ := regexp.MatchString("[A-Z]", password)
+	lowerCaseMatch, _ := regexp.MatchString("[a-z]", password)
+
+	if !(passwordLen && numberMatch && capitalCaseMatch && lowerCaseMatch) {
+		panic("Weak password used! " +
+			"Minimum eight characters, at least one uppercase letter, " +
+			"one lowercase letter and one number.")
+	}
 }
 
 func HashKey(key *SecretKey) []byte {
