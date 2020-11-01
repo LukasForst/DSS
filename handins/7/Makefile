@@ -1,5 +1,5 @@
 install:
-	go get -t -v golang.org/x/crypto/scrypt/...
+	go get golang.org/x/crypto/scrypt
 
 run:
 	go run *.go

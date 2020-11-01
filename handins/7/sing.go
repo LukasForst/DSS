@@ -17,6 +17,11 @@ func BytesToInt(data []byte) *big.Int {
 	return i
 }
 
+// compute sha
+func Sha256AsInt(data []byte) *big.Int {
+	return BytesToInt(Sha256(data))
+}
+
 // generates fixed size signature
 // size of the signature is size in bytes if the Key.n
 func (k *SecretKey) SignatureForData(data []byte) []byte {
@@ -41,4 +46,22 @@ func (k *SecretKey) SignatureForHash(hash []byte) []byte {
 	}
 
 	return encryptedBytes
+}
+
+// verifies signature
+func (k *PublicKey) CheckSignature(data []byte, signature []byte) bool {
+	// check signature size
+	if len(k.N.Bytes()) != len(signature) {
+		return false
+	}
+	// converts signature to the big int
+	s := BytesToInt(signature)
+	// using RSA for the signing,
+	// we must encrypt the the signature
+	// decrypt the signature
+	ds := k.Encrypt(s)
+	// get sha of the data
+	sha := Sha256AsInt(data)
+	// compare hashes
+	return sha.Cmp(ds) == 0
 }

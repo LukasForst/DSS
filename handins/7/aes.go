@@ -7,6 +7,10 @@ import (
 	"golang.org/x/crypto/scrypt"
 )
 
+// mainly taken from the
+// https://itnext.io/encrypt-data-with-a-password-in-go-b5366384e291
+
+// encrypt data with AES https://en.wikipedia.org/wiki/Galois/Counter_Mode
 func Encrypt(key, data []byte) ([]byte, error) {
 	key, salt, err := DeriveKey(key, nil)
 	if err != nil {
@@ -28,6 +32,7 @@ func Encrypt(key, data []byte) ([]byte, error) {
 	ciphertext = append(ciphertext, salt...)
 	return ciphertext, nil
 }
+
 func Decrypt(key, data []byte) ([]byte, error) {
 	salt, data := data[len(data)-32:], data[:len(data)-32]
 	key, _, err := DeriveKey(key, salt)
@@ -50,6 +55,8 @@ func Decrypt(key, data []byte) ([]byte, error) {
 	return plaintext, nil
 }
 
+// derive 32 bytes AES key from password
+// returns 32 bytes of key and 32 bytes of salt
 func DeriveKey(password, salt []byte) ([]byte, []byte, error) {
 	if salt == nil {
 		salt = make([]byte, 32)
