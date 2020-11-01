@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"crypto/sha256"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -53,15 +51,6 @@ func EnsurePasswordComplexity(password string) {
 	}
 }
 
-func HashKey(key *SecretKey) []byte {
-	// compute hash of the private key of 32 bits
-	hash := sha256.New()
-	hash.Write(key.D.Bytes())
-	hash.Write(key.N.Bytes())
-	skHash := hash.Sum(nil)
-	return skHash
-}
-
 func StoreSKInFile(key SecretKey, filename string, password string) {
 	// derive aes key from the given password
 	aesKey, salt, err := DeriveKey([]byte(password), nil)
@@ -74,14 +63,6 @@ func StoreSKInFile(key SecretKey, filename string, password string) {
 		panic(err)
 	}
 	defer file.Close()
-	// hash plaintext secret key - 32 bytes from SHA256
-	// in order to check the consistency during decryption
-	skHash := HashKey(&key)
-	// write 32 bytes hash of the key
-	_, err = file.Write(skHash)
-	if err != nil {
-		panic(err)
-	}
 	// write 32 bytes of salt
 	_, err = file.Write(salt)
 	if err != nil {
@@ -111,16 +92,14 @@ func ReadSKFromFile(filename string, password string) SecretKey {
 		panic(err)
 	}
 	defer file.Close()
-
-	// read hash-32-byte, salt-32-byte, ciphertext
+	// read salt-32-byte, ciphertext
 	readBytes, err := ioutil.ReadAll(file)
 	if err != nil {
 		panic(err)
 	}
 	// prepare data
-	skHash := readBytes[0:32]
-	salt := readBytes[32:64]
-	ciphertext := readBytes[64:]
+	salt := readBytes[0:32]
+	ciphertext := readBytes[32:]
 	// derive actual AES key from the password and the salt
 	aesKey, _, err := DeriveKey([]byte(password), salt)
 	if err != nil {
@@ -140,12 +119,5 @@ func ReadSKFromFile(filename string, password string) SecretKey {
 	D := BytesToInt(plaintext[0:256])
 	N := BytesToInt(plaintext[256:512])
 	// build secret key
-	skDecrypted := SecretKey{D: D, N: N}
-	// verify that the decrypted secret key
-	// matches the hash of the key in the file
-	decryptedHash := HashKey(&skDecrypted)
-	if !bytes.Equal(skHash, decryptedHash) {
-		panic("hashes don't match!")
-	}
-	return skDecrypted
+	return SecretKey{D: D, N: N}
 }
