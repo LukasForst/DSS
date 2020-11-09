@@ -31,6 +31,8 @@ type Model struct {
 	pMutex    sync.RWMutex
 
 	ledger Ledger
+
+	blocksSeen map[string]bool
 }
 
 func MakeModel() Model {
@@ -39,6 +41,7 @@ func MakeModel() Model {
 		transactionsSeen: make(map[string]bool),
 		peersList:        make(map[string]bool),
 		ledger:           MakeLedger(),
+		blocksSeen:       make(map[string]bool),
 	}
 }
 

@@ -59,6 +59,10 @@ func OnTransactionReceived(transaction *SignedTransaction, model *Model) {
 	if model.transactionsSeen[transactionID] == true {
 		return
 	} else {
+		// store the transaction and wait for block from sequencer
+		// OnBlockReceived: check if block is valid/to e accepted
+		// If valid, execute transactions as in order from block
+
 		// perform the transaction
 		model.ledger.DoSignedTransaction(transaction)
 
