@@ -60,7 +60,7 @@ func OnTransactionReceived(transaction *SignedTransaction, model *Model) {
 		return
 	} else {
 		// store the transaction and wait for block from sequencer
-		// OnBlockReceived: check if block is valid/to e accepted
+		// OnBlockReceived: check if block is valid/to be accepted
 		// If valid, execute transactions as in order from block
 
 		// perform the transaction
@@ -98,5 +98,26 @@ func OnPeersRequest(conn net.Conn, model *Model) {
 	// encode as json and send to other party
 	if err := json.NewEncoder(conn).Encode(peers); err != nil {
 		log.Println("It was not possible to send data.")
+	}
+}
+
+func OnBlockReceived(block *Block, model *Model) {
+	//check if block is valid/to be accepted
+
+	blocknumber := block.number
+
+	PrintStatus("Block " + blocknumber + " received.")
+
+	//check if block number was seen before
+	if model.blocksSeen[blocknumber] == true {
+		return
+	} else {
+		//check if blocknumber is last seen block +1
+		if model.blocksSeen[blocknumber-1] == false {
+			return
+		} else {
+			//check block signature
+
+		}
 	}
 }
