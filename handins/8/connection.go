@@ -53,15 +53,20 @@ func OnTransactionReceived(transaction *SignedTransaction, model *Model) {
 
 	transactionID := transaction.ID
 	PrintStatus("Transaction " + transactionID + " received.")
-	// If we already did the transaction, return
+	// If we already did the transaction or it is already stored, return
 	model.mpMutex.Lock()
 	defer model.mpMutex.Unlock()
-	if model.transactionsSeen[transactionID] == true {
+	if model.transactionsSeen[transactionID] == true || model.transactionsWait[transactionID] == true {
 		return
 	} else {
-		// store the transaction and wait for block from sequencer
-		// OnBlockReceived: check if block is valid/to be accepted
+		// store the transaction
+		model.transactionsWait[transactionID] = true
+
+		// Wait for block from sequencer
+		//OnBlockReceived: check if block is valid/to be accepted
 		// If valid, execute transactions as in order from block
+
+		//if valid: do te below for every transaction in the block in order
 
 		// perform the transaction
 		model.ledger.DoSignedTransaction(transaction)
