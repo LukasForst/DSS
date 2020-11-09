@@ -32,12 +32,14 @@ type Model struct {
 
 	ledger Ledger
 
-	blocksSeen map[string]bool
+	blocksSeen       map[string]bool
+	transactionsWait map[string]bool
 }
 
 func MakeModel() Model {
 	return Model{
 		connections:      make(map[string]net.Conn),
+		transactionsWait: make(map[string]bool),
 		transactionsSeen: make(map[string]bool),
 		peersList:        make(map[string]bool),
 		ledger:           MakeLedger(),
