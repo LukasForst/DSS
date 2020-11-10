@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"crypto/rsa"
+	"fmt"
+)
 
 type PresentDto struct {
 	Type string
@@ -12,13 +15,18 @@ func MakePresent(address string) PresentDto {
 	return PresentDto{Type: "present", Data: address}
 }
 
+type PeerList struct {
+	Peers       []string
+	SequencerPk rsa.PublicKey
+}
+
 type PeersListDto struct {
 	Type string
 	// names of the servers
-	Data []string
+	Data PeerList
 }
 
-func MakePeersList(data []string) PeersListDto {
+func MakePeersList(data PeerList) PeersListDto {
 	return PeersListDto{Type: "peers-list", Data: data}
 }
 
@@ -28,6 +36,25 @@ type PeersRequestDto struct {
 
 func MakePeersRequest() PeersRequestDto {
 	return PeersRequestDto{Type: "peers-request"}
+}
+
+type SignedSequencerBlockDto struct {
+	Type string
+	Data SignedSequencerBlock
+}
+
+func MakeSignedSequencerBlockDto(data SignedSequencerBlock) SignedSequencerBlockDto {
+	return SignedSequencerBlockDto{Type: "signed-block", Data: data}
+}
+
+type SignedSequencerBlock struct {
+	Signature []byte
+	Block     SequencerBlock
+}
+
+type SequencerBlock struct {
+	BlockNumber    int
+	TransactionIds []string
 }
 
 // data transfer object for transaction

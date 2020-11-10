@@ -2,11 +2,16 @@ package main
 
 import (
 	"bufio"
+	cryptoRand "crypto/rand"
+	"crypto/rsa"
 	"encoding/json"
 	"log"
 	"net"
 	"os"
+	"sort"
+	"strconv"
 	"strings"
+	"time"
 )
 
 func ConnectToNeighborhood(model *Model) {
@@ -66,11 +71,64 @@ func InitialConnection(conn net.Conn, model *Model) {
 		log.Fatal("It was not possible to connect to the first peer! ->" + err.Error())
 	}
 	// register the peers in the application
-	model.AddNetworkPeers(peers.Data)
+	model.AddNetworkPeers(peers.Data.Peers)
 	// print peers
 	model.PrintPeers()
+	model.sequencerPublicKey = &peers.Data.SequencerPk
 	// drop this initial connection
 	_ = conn.Close()
+}
+
+func StartSequencer(model *Model) {
+	privateKey, err := rsa.GenerateKey(cryptoRand.Reader, 2048)
+	if err != nil {
+		panic(err)
+	}
+	model.amISequencer = true
+	model.pk = privateKey
+	model.sequencerPublicKey = &privateKey.PublicKey
+
+	go StartSequencerWork(model)
+}
+
+func StartSequencerWork(model *Model) {
+	for {
+		time.Sleep(10 * time.Second)
+		PrintStatus("Creating new block " + strconv.Itoa(model.currentBlockNumber))
+		transactionsToSend := make([]string, 0, 0)
+		for transactionId, transaction := range model.transactionsWaiting {
+			// check if it was already processed in different block
+			if transaction == nil {
+				continue
+			}
+			// add to the current block
+			transactionsToSend = append(transactionsToSend, transactionId)
+		}
+		PrintStatus("Block created with " + strconv.Itoa(len(transactionsToSend)) + " transactions.")
+
+		// check if there are any transactions to send
+		if len(transactionsToSend) == 0 {
+			continue
+		}
+		// sort the transactions
+		sort.Strings(transactionsToSend)
+		// process the transactions
+		for _, transactionId := range transactionsToSend {
+			transaction, _ := model.transactionsWaiting[transactionId]
+			model.ledger.DoSignedTransaction(transaction)
+			model.transactionsWaiting[transactionId] = nil
+			model.transactionsProcessed[transactionId] = true
+		}
+
+		// create block
+		block := SequencerBlock{BlockNumber: model.currentBlockNumber, TransactionIds: transactionsToSend}
+		// increase the block number
+		model.currentBlockNumber++
+		// sign block
+		signedBlock := block.SignBlock(model.pk)
+		// broadcast the block
+		model.BroadCastJson(MakeSignedSequencerBlockDto(signedBlock))
+	}
 }
 
 func Startup() {
@@ -81,9 +139,10 @@ func Startup() {
 	ipPort, _ := stdinReader.ReadString('\n')
 
 	conn, err := net.Dial("tcp", strings.TrimSpace(ipPort))
-	// if the peer does not exist, don't connect
+	// if the peer does not exist, don't connect and start the network
 	if err != nil {
-		PrintStatus("It was not possible to connect - creating own network.")
+		PrintStatus("It was not possible to connect - creating own network & starting the sequencer mode.")
+		StartSequencer(&model)
 	} else {
 		// perform initial sync with the remote peer
 		InitialConnection(conn, &model)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/rsa"
 	"encoding/json"
 	"log"
 	"net"
@@ -23,8 +24,8 @@ type Model struct {
 	cMutex      sync.RWMutex
 
 	//key: transaction ID, value: seen before?
-	transactionsSeen map[string]bool
-	mpMutex          sync.RWMutex
+	transactionsProcessed map[string]bool
+	mpMutex               sync.RWMutex
 
 	// key: ip & port, value: is me?
 	peersList map[string]bool
@@ -32,18 +33,28 @@ type Model struct {
 
 	ledger Ledger
 
-	blocksSeen       map[string]bool
-	transactionsWait map[string]bool
+	blocksProcessed     map[int]bool
+	transactionsWaiting map[string]*SignedTransaction
+
+	sequencerPublicKey *rsa.PublicKey
+
+	amISequencer       bool
+	pk                 *rsa.PrivateKey
+	currentBlockNumber int
 }
 
 func MakeModel() Model {
 	return Model{
-		connections:      make(map[string]net.Conn),
-		transactionsWait: make(map[string]bool),
-		transactionsSeen: make(map[string]bool),
-		peersList:        make(map[string]bool),
-		ledger:           MakeLedger(),
-		blocksSeen:       make(map[string]bool),
+		connections:           make(map[string]net.Conn),
+		transactionsWaiting:   make(map[string]*SignedTransaction),
+		transactionsProcessed: make(map[string]bool),
+		peersList:             make(map[string]bool),
+		ledger:                MakeLedger(),
+		blocksProcessed:       make(map[int]bool),
+		sequencerPublicKey:    nil,
+		amISequencer:          false,
+		pk:                    nil,
+		currentBlockNumber:    0,
 	}
 }
 

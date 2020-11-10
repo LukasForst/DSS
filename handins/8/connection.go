@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net"
+	"strconv"
 )
 
 // process the connection
@@ -28,7 +29,7 @@ func OnNewConnection(conn net.Conn, model *Model) {
 			OnPeersRequest(conn, model)
 		// new peers received
 		case "peers-list":
-			var peers []string
+			var peers PeerList
 			if err := json.Unmarshal(payload, &peers); err != nil {
 				log.Fatal("It was not possible to unmarshall the peers list.")
 			}
@@ -44,6 +45,12 @@ func OnNewConnection(conn net.Conn, model *Model) {
 				log.Fatal("It was not possible to parse transaction object.")
 			}
 			OnTransactionReceived(&transaction, model)
+		case "signed-block":
+			var block SignedSequencerBlock
+			if err := json.Unmarshal(payload, &block); err != nil {
+				log.Fatal("It was not possible to parse signed block object.")
+			}
+			OnBlockReceived(&block, model)
 		}
 	}
 }
@@ -56,27 +63,21 @@ func OnTransactionReceived(transaction *SignedTransaction, model *Model) {
 	// If we already did the transaction or it is already stored, return
 	model.mpMutex.Lock()
 	defer model.mpMutex.Unlock()
-	if model.transactionsSeen[transactionID] == true || model.transactionsWait[transactionID] == true {
+
+	// the transaction is already in waiting state
+	if _, ok := model.transactionsWaiting[transactionID]; ok {
 		return
-	} else {
-		// store the transaction
-		model.transactionsWait[transactionID] = true
-
-		// Wait for block from sequencer
-		//OnBlockReceived: check if block is valid/to be accepted
-		// If valid, execute transactions as in order from block
-
-		//if valid: do te below for every transaction in the block in order
-
-		// perform the transaction
-		model.ledger.DoSignedTransaction(transaction)
-
-		//register Transaction as seen
-		model.transactionsSeen[transactionID] = true
-
-		// propagate transaction
-		model.BroadCastJson(MakeTransactionDto(transaction))
 	}
+	// the transaction was already processed
+	if processed, exists := model.transactionsProcessed[transactionID]; exists && processed {
+		return
+	}
+
+	// store the transaction
+	model.transactionsWaiting[transactionID] = transaction
+
+	// propagate transaction
+	model.BroadCastJson(MakeTransactionDto(transaction))
 }
 
 func OnPresent(
@@ -93,36 +94,60 @@ func OnPresent(
 	}
 }
 
-func OnPeersList(peers []string, model *Model) {
-	model.AddNetworkPeers(peers)
+func OnPeersList(peers PeerList, model *Model) {
+	model.AddNetworkPeers(peers.Peers)
 	model.PrintPeers()
+	model.sequencerPublicKey = &peers.SequencerPk
 }
 
 func OnPeersRequest(conn net.Conn, model *Model) {
-	peers := MakePeersList(model.GetPeersList())
+	peers := MakePeersList(PeerList{Peers: model.GetPeersList(), SequencerPk: *model.sequencerPublicKey})
 	// encode as json and send to other party
 	if err := json.NewEncoder(conn).Encode(peers); err != nil {
 		log.Println("It was not possible to send data.")
 	}
 }
 
-func OnBlockReceived(block *Block, model *Model) {
+func OnBlockReceived(block *SignedSequencerBlock, model *Model) {
 	//check if block is valid/to be accepted
 
-	blocknumber := block.number
+	blocknumber := block.Block.BlockNumber
+	PrintStatus("Block " + strconv.Itoa(blocknumber) + " received.")
 
-	PrintStatus("Block " + blocknumber + " received.")
+	if !block.IsSignatureCorrect(model.sequencerPublicKey) {
+		PrintStatus("Signature is incorrect! Not processing.")
+		return
+	}
 
 	//check if block number was seen before
-	if model.blocksSeen[blocknumber] == true {
+	if model.blocksProcessed[blocknumber] == true {
 		return
-	} else {
-		//check if blocknumber is last seen block +1
-		if model.blocksSeen[blocknumber-1] == false {
-			return
-		} else {
-			//check block signature
-
-		}
 	}
+
+	// check if blocknumber is last seen block +1
+	if blocknumber != 0 && model.blocksProcessed[blocknumber-1] == false {
+		PrintStatus("Missing block! Received block: " +
+			strconv.Itoa(blocknumber) + " but the previous is missing!")
+		return
+	}
+
+	// process the block
+	model.blocksProcessed[blocknumber] = true
+	for _, id := range block.Block.TransactionIds {
+		// pick up the transaction
+		transaction, _ := model.transactionsWaiting[id]
+		// check if it was already processed or not
+		if transaction == nil {
+			continue
+		}
+		PrintStatus("Processing " + transaction.ID)
+		// perform the transaction
+		model.ledger.DoSignedTransaction(transaction)
+		model.transactionsWaiting[id] = nil
+		model.transactionsProcessed[id] = true
+	}
+	PrintStatus("Block processed.")
+
+	// send the block to other nodes
+	model.BroadCastJson(MakeSignedSequencerBlockDto(*block))
 }
