@@ -51,8 +51,21 @@ func OnNewConnection(conn net.Conn, model *Model) {
 				log.Fatal("It was not possible to parse signed block object.")
 			}
 			OnBlockReceived(&block, model)
+		case "account-setup":
+			var setup AccountSetup
+			if err := json.Unmarshal(payload, &setup); err != nil {
+				log.Fatal("It was not possible to parse setup account object.")
+			}
+			OnAccountSetup(setup, model)
 		}
 	}
+}
+
+func OnAccountSetup(setup AccountSetup, model *Model) {
+	model.ledger.lock.Lock()
+	defer model.ledger.lock.Unlock()
+
+	model.ledger.Accounts[setup.AccountId] = setup.Amount
 }
 
 func OnTransactionReceived(transaction *SignedTransaction, model *Model) {

@@ -57,6 +57,20 @@ type SequencerBlock struct {
 	TransactionIds []string
 }
 
+type AccountSetupDto struct {
+	Type string
+	Data AccountSetup
+}
+
+func MakeAccountSetupDto(setup AccountSetup) AccountSetupDto {
+	return AccountSetupDto{Type: "account-setup", Data: setup}
+}
+
+type AccountSetup struct {
+	AccountId string
+	Amount    int
+}
+
 // data transfer object for transaction
 type TransactionDto struct {
 	Type string

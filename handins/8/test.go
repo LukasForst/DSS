@@ -6,7 +6,6 @@ import (
 	"crypto/rsa"
 	"encoding/json"
 	"log"
-	"math/rand"
 	"net"
 	"os"
 	"strconv"
@@ -14,21 +13,56 @@ import (
 )
 
 type Account struct {
-	PK             *rsa.PrivateKey
-	expectedAmount int
+	PK     *rsa.PrivateKey
+	amount int
 }
 
-func GenerateAccounts(count int) []Account {
-	accounts := make([]Account, 0, count)
-	for i := 0; i < count; i++ {
-		privateKey, err := rsa.GenerateKey(cryptoRand.Reader, 2048)
-		if err != nil {
-			panic(err)
-		}
-		acc := Account{privateKey, 0}
-		accounts = append(accounts, acc)
+func GenerateAccount(amount int) Account {
+	privateKey, err := rsa.GenerateKey(cryptoRand.Reader, 2048)
+	if err != nil {
+		panic(err)
 	}
-	return accounts
+	return Account{privateKey, amount}
+}
+
+func GetEncoder(id int, stdinReader *bufio.Reader) *json.Encoder {
+	PrintStatus("Enter IP address and the port of the peer # " + strconv.Itoa(id))
+	ipPort, _ := stdinReader.ReadString('\n')
+	// connect to the peer
+	conn, err := net.Dial("tcp", strings.TrimSpace(ipPort))
+	if err != nil {
+		log.Fatal("It was not possible to connect.")
+	}
+	return json.NewEncoder(conn)
+}
+
+func SetupAccounts(enc *json.Encoder, accounts []Account) {
+	for _, account := range accounts {
+		accountId, _ := json.Marshal(account.PK.PublicKey)
+		dto := MakeAccountSetupDto(AccountSetup{AccountId: string(accountId), Amount: account.amount})
+
+		if err := enc.Encode(dto); err != nil {
+			log.Fatal("Error while sending data -> " + err.Error())
+		}
+	}
+}
+
+func RunTransaction(transactionId string, from *Account, to *Account, amount int, enc *json.Encoder) {
+	fromPk, _ := json.Marshal(from.PK.PublicKey)
+	toPk, _ := json.Marshal(to.PK.PublicKey)
+
+	transaction := SignedTransaction{
+		ID:     transactionId,
+		From:   string(fromPk),
+		To:     string(toPk),
+		Amount: amount,
+	}
+	transaction.ComputeAndSetSignature(from.PK)
+
+	dto := MakeTransactionDto(&transaction)
+	if err := enc.Encode(dto); err != nil {
+		log.Fatal("Error while sending data -> " + err.Error())
+	}
 }
 
 func StartTest() {
@@ -37,61 +71,30 @@ func StartTest() {
 	testId, _ := stdinReader.ReadString('\n')
 	testId = strings.TrimSpace(testId)
 
-	PrintStatus("Enter IP address and the port of the peer.")
-	ipPort, _ := stdinReader.ReadString('\n')
+	peer1 := GetEncoder(1, stdinReader)
+	peer2 := GetEncoder(2, stdinReader)
 
-	// connect to the peer
-	conn, err := net.Dial("tcp", strings.TrimSpace(ipPort))
-	if err != nil {
-		log.Fatal("It was not possible to connect.")
-	}
+	A := GenerateAccount(1000)
+	B := GenerateAccount(0)
+	C := GenerateAccount(0)
+	accounts := []Account{A, B, C}
 
-	enc := json.NewEncoder(conn)
-	dec := json.NewDecoder(conn)
-	// ask for peers
-	if err := enc.Encode(MakePeersRequest()); err != nil {
-		log.Fatal("It was not possible to connect to the first peer! ->" + err.Error())
-	}
-	// receive peers
-	var peers PeersListDto
-	if err := dec.Decode(&peers); err != nil {
-		log.Fatal("It was not possible to connect to the first peer! ->" + err.Error())
-	}
+	SetupAccounts(peer1, accounts)
+	SetupAccounts(peer2, accounts)
 
 	PrintStatus("Pres enter to start the execution.")
 	_, _ = stdinReader.ReadString('\n')
 
-	transactions := 10
-	accounts := GenerateAccounts(5)
-
-	for i := 0; i < transactions; i++ {
-		from := rand.Intn(len(accounts))
-		to := rand.Intn(len(accounts))
-
-		fromPk, _ := json.Marshal(accounts[from].PK.PublicKey)
-		toPk, _ := json.Marshal(accounts[to].PK.PublicKey)
-
-		amount := rand.Intn(100)
-		accounts[from].expectedAmount = -amount
-		accounts[to].expectedAmount = +amount
-
-		transaction := SignedTransaction{
-			ID:     testId + strconv.Itoa(i),
-			From:   string(fromPk),
-			To:     string(toPk),
-			Amount: amount,
-		}
-		transaction.ComputeAndSetSignature(accounts[from].PK)
-
-		dto := MakeTransactionDto(&transaction)
-		if err := enc.Encode(dto); err != nil {
-			log.Fatal("Error while sending data -> " + err.Error())
-		}
+	for i := 0; i < A.amount; i++ {
+		go RunTransaction(testId+strconv.Itoa(i), &A, &B, 1, peer1)
+		go RunTransaction(testId+strconv.Itoa(i), &A, &C, 1, peer2)
 	}
 	// manually check how do the amounts look like
 	log.Println("end")
+	PrintStatus("Pres enter to end the execution.")
+	_, _ = stdinReader.ReadString('\n')
 }
 
-//func main() {
-//	StartTest()
-//}
+func main() {
+	StartTest()
+}
