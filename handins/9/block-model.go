@@ -6,13 +6,22 @@ type SignedBlock struct {
 }
 
 type Block struct {
+	Hash              string
 	PreviousBlockHash string
 	Transactions      []string
 	NextBlocksHashes  []string
 }
 
+type GenesisBlock struct {
+	Hash                 string
+	Seed                 int
+	InitialAccountStates map[string]int
+	NextBlocksHashes     []string
+}
+
 type BlockChain struct {
-	Blocks map[string]Block
+	Blocks       map[string]Block
+	GenesisBlock GenesisBlock
 }
 
 type Chain struct {
