@@ -95,8 +95,8 @@ func (l *Ledger) DoSignedTransaction(t *SignedTransaction) {
 
 	if !t.IsSignatureCorrect() {
 		PrintStatus("Transaction " + t.ID + " has incorrect signature!")
-	} else if t.Amount < 0 {
-		PrintStatus("Transaction " + t.ID + " has incorrect negative amount!")
+	} else if t.Amount < 1 {
+		PrintStatus("Transaction " + t.ID + " has incorrect amount below 1!")
 	} else if t.Amount > l.Accounts[t.From] {
 		PrintStatus("Transaction " + t.ID + ": the transaction amount is higher than the account balance of the sender! ")
 	} else {
