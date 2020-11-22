@@ -104,7 +104,7 @@ func (l *Ledger) DoSignedTransaction(t *SignedTransaction) {
 		PrintStatus(fmt.Sprintf("Recipient Balance: %d", l.Accounts[t.To]))
 
 		l.Accounts[t.From] -= t.Amount
-		l.Accounts[t.To] += t.Amount
+		l.Accounts[t.To] += t.Amount - 1
 
 		PrintStatus(fmt.Sprintf("Transaction %s performed - amount: %d", t.ID, t.Amount))
 		PrintStatus(fmt.Sprintf("Sender Balance: %d", l.Accounts[t.From]))
