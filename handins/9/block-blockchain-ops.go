@@ -12,16 +12,14 @@ func (bc *BlockChain) AppendBlock(block *Block) {
 	// todo what if that one does not exist?
 	previousBlock := bc.Blocks[block.PreviousBlockHash]
 
-	if block.PreviousBlockHash != "" {
+	//check if previous block exists
+	if previousBlock != nil {
 		previousBlock.NextBlocksHashes = append(previousBlock.NextBlocksHashes, previousBlock.Hash)
 	} else {
-		PrintStatus("The previous block hash is empty!")
+		PrintStatus("The previous block does not exist!")
 	}
 	// todo maybe lock that?
 	// todo maybe ensure that nextblocks are empty
-	//if len(previousBlock.NextBlocksHashes) == 0 {
 	previousBlock.NextBlocksHashes = append(previousBlock.NextBlocksHashes, previousBlock.Hash)
-	// } else {
-	// 	PrintStatus("")
-	// }
+
 }
