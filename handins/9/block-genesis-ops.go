@@ -20,10 +20,10 @@ func MakeGenesis(initialAccountStates *map[string]int) GenesisBlock {
 func (g *GenesisBlock) ComputeHash() string {
 	msgHash := sha256.New()
 
-	WriteToHashSafe(&msgHash, strconv.Itoa(g.Seed))
+	WriteStringToHashSafe(&msgHash, strconv.Itoa(g.Seed))
 	for accountKey, value := range g.InitialAccountStates {
-		WriteToHashSafe(&msgHash, accountKey)
-		WriteToHashSafe(&msgHash, strconv.Itoa(value))
+		WriteStringToHashSafe(&msgHash, accountKey)
+		WriteStringToHashSafe(&msgHash, strconv.Itoa(value))
 	}
 
 	msgHashSum := msgHash.Sum(nil)

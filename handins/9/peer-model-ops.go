@@ -12,6 +12,7 @@ func (pm *PeerModel) QueueTransactionIfNew(transaction *SignedTransaction) bool 
 	} else {
 		executed, exists := pm.hasExecutedTransaction[transaction.ID]
 		if exists && executed {
+			// ignore
 		} else {
 			pm.waitingTransactions[transaction.ID] = transaction
 		}
@@ -89,4 +90,29 @@ func (pm *PeerModel) UndoLedgerTransaction(transaction *SignedTransaction) {
 
 	pm.hasExecutedTransaction[transaction.ID] = false
 	pm.waitingTransactions[transaction.ID] = transaction
+}
+
+func (pm *PeerModel) CreateAndExecuteBlock() *Block {
+	// todo locking
+	transactionsInBlock := make([]SignedTransaction, 0, 0)
+	for _, transaction := range pm.waitingTransactions {
+		transactionsInBlock = append(transactionsInBlock, *transaction)
+	}
+
+	_, previousBlock := pm.blockChain.GetLongestChainLeaf()
+	block := Block{
+		Hash:              "",
+		PreviousBlockHash: previousBlock,
+		Transactions:      transactionsInBlock,
+		NextBlocksHashes:  make([]string, 0, 0),
+	}
+	// compute hash ~= id of the block
+	block.Hash = block.ComputeBase64Hash()
+
+	// execute transactions, removing them from the waiting list
+	pm.blockChain.AppendBlock(&block)
+	// execute transactions
+	pm.DoBlocksTransactions(&block)
+
+	return &block
 }

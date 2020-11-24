@@ -7,16 +7,15 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
-	"hash"
 	"strconv"
 )
 
 func (b *SequencerBlock) ComputeHash() []byte {
 	msgHash := sha256.New()
 
-	WriteToHashSafe(&msgHash, strconv.Itoa(b.BlockNumber))
+	WriteStringToHashSafe(&msgHash, strconv.Itoa(b.BlockNumber))
 	for _, id := range b.TransactionIds {
-		WriteToHashSafe(&msgHash, id)
+		WriteStringToHashSafe(&msgHash, id)
 	}
 
 	msgHashSum := msgHash.Sum(nil)
@@ -44,11 +43,11 @@ func (b *SignedSequencerBlock) IsSignatureCorrect(key *rsa.PublicKey) bool {
 func (t *SignedTransaction) ComputeHash() []byte {
 	msgHash := sha256.New()
 
-	WriteToHashSafe(&msgHash, t.ID)
-	WriteToHashSafe(&msgHash, t.From)
-	WriteToHashSafe(&msgHash, t.To)
+	WriteStringToHashSafe(&msgHash, t.ID)
+	WriteStringToHashSafe(&msgHash, t.From)
+	WriteStringToHashSafe(&msgHash, t.To)
 	// intentionally hashing int as a string
-	WriteToHashSafe(&msgHash, strconv.Itoa(t.Amount))
+	WriteStringToHashSafe(&msgHash, strconv.Itoa(t.Amount))
 	msgHashSum := msgHash.Sum(nil)
 	return msgHashSum
 }
@@ -77,10 +76,4 @@ func (t *SignedTransaction) IsSignatureCorrect() bool {
 		PrintStatus("Could not verify signature: " + err.Error())
 	}
 	return err == nil
-}
-
-func WriteToHashSafe(h *hash.Hash, str string) {
-	if _, err := (*h).Write([]byte(str)); err != nil {
-		panic(err)
-	}
 }
