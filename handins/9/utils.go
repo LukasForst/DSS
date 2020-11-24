@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 	"hash"
@@ -18,6 +19,20 @@ func FromBase64(data string) []byte {
 		log.Fatal(err)
 	}
 	return bytes
+}
+
+// produces 32 bytes
+func StringHash(str string) []byte {
+	strHash := sha256.New()
+	WriteStringToHashSafe(&strHash, str)
+	return strHash.Sum(nil)
+}
+
+// produces 32 bytes
+func ByteHash(bytes []byte) []byte {
+	byteHash := sha256.New()
+	WriteBytesToHashSafe(&byteHash, bytes)
+	return byteHash.Sum(nil)
 }
 
 func WriteStringToHashSafe(h *hash.Hash, str string) {

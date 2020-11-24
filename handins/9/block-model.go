@@ -2,6 +2,11 @@ package main
 
 import "sync"
 
+type Draw struct {
+	Slot      int
+	Signature []byte
+}
+
 type SignedBlock struct {
 	Block     Block
 	Signature string

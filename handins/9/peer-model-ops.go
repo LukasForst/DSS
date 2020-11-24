@@ -20,6 +20,8 @@ func (pm *PeerModel) ProcessBlock(signedBlock *SignedBlock) {
 	// todo some locking
 
 	// todo verify signature
+	// todo verify whether we actually can append the block
+	// -> simulate whole flow and see
 	block := &signedBlock.Block
 	pm.blockChain.AppendBlock(block)
 	// happy scenario
