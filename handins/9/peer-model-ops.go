@@ -11,7 +11,6 @@ func (pm *PeerModel) GetBlock(blockId string) *Block {
 
 // returns true if the transaction should be broadcast
 func (pm *PeerModel) QueueTransactionIfNew(transaction *SignedTransaction) {
-	// todo maybe some lockign?
 
 	_, exists := pm.cache.hasExecutedTransaction[transaction.ID]
 	if exists {
@@ -22,7 +21,6 @@ func (pm *PeerModel) QueueTransactionIfNew(transaction *SignedTransaction) {
 }
 
 func (pm *PeerModel) ProcessBlock(signedBlock *SignedBlock) {
-	// todo some locking
 	pm.lock.Lock()
 	defer pm.lock.Unlock()
 
@@ -37,9 +35,6 @@ func (pm *PeerModel) ProcessBlock(signedBlock *SignedBlock) {
 		PrintStatus("Wrong block! Sender didn't win.")
 		return
 	}
-	// todo verify signature
-	// todo verify whether we actually can append the block
-	// -> simulate whole flow and see
 	block := &signedBlock.Block
 	pm.blockChain.AppendBlock(block)
 	// happy scenario

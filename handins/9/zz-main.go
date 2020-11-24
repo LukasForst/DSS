@@ -5,7 +5,7 @@ func main() {
 	GenerateAndDump(5, "zz-init-data.json")
 	accs := LoadFromFile(storedData)
 
-	// todo run 5 of them with different private keys and send them some data
+	// run 5 of them with different private keys and send data
 	model := InitModel(&accs.PrivateKeys[0], &accs)
 	StartupServer(model)
 }

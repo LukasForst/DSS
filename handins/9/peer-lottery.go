@@ -14,7 +14,6 @@ func StartLotteryProcess(model *PeerModel) {
 	for {
 		slot := model.blockChain.GetSlotNumber()
 		peerAccountId := FromRsaPubToAccount(&model.peerKey.PublicKey)
-		// todo locking on ledger + safety check
 		tokens := model.ledger.Accounts[peerAccountId]
 
 		draw := RunLottery(
