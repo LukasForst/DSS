@@ -10,36 +10,6 @@ import (
 	"strconv"
 )
 
-func (b *SequencerBlock) ComputeHash() []byte {
-	msgHash := sha256.New()
-
-	WriteStringToHashSafe(&msgHash, strconv.Itoa(b.BlockNumber))
-	for _, id := range b.TransactionIds {
-		WriteStringToHashSafe(&msgHash, id)
-	}
-
-	msgHashSum := msgHash.Sum(nil)
-	return msgHashSum
-}
-
-func (b *SequencerBlock) SignBlock(key *rsa.PrivateKey) SignedSequencerBlock {
-	msgHashSum := b.ComputeHash()
-	signature, err := rsa.SignPSS(rand.Reader, key, crypto.SHA256, msgHashSum, nil)
-	if err != nil {
-		panic(err)
-	}
-	return SignedSequencerBlock{Signature: signature, Block: *b}
-}
-
-func (b *SignedSequencerBlock) IsSignatureCorrect(key *rsa.PublicKey) bool {
-	msgHashSum := b.Block.ComputeHash()
-	err := rsa.VerifyPSS(key, crypto.SHA256, msgHashSum, b.Signature, nil)
-	if err != nil {
-		PrintStatus("Could not verify signature: " + err.Error())
-	}
-	return err == nil
-}
-
 func (t *SignedTransaction) ComputeHash() []byte {
 	msgHash := sha256.New()
 

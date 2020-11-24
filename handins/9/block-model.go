@@ -4,7 +4,7 @@ import "sync"
 
 type SignedBlock struct {
 	Block     Block
-	Signature []byte
+	Signature string
 }
 
 type Block struct {

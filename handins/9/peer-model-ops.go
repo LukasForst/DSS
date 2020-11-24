@@ -5,19 +5,15 @@ func (pm *PeerModel) GetBlock(blockId string) *Block {
 }
 
 // returns true if the transaction should be broadcast
-func (pm *PeerModel) QueueTransactionIfNew(transaction *SignedTransaction) bool {
-	_, exist := pm.hasBroadcastedTransaction[transaction.ID]
-	if exist {
-		return false
-	} else {
-		executed, exists := pm.hasExecutedTransaction[transaction.ID]
-		if exists && executed {
-			// ignore
-		} else {
-			pm.waitingTransactions[transaction.ID] = transaction
-		}
-		return false
+func (pm *PeerModel) QueueTransactionIfNew(transaction *SignedTransaction) {
+	// todo maybe some lockign?
+
+	_, exists := pm.cache.hasExecutedTransaction[transaction.ID]
+	if exists {
+		return
 	}
+
+	pm.waitingTransactions[transaction.ID] = transaction
 }
 
 func (pm *PeerModel) ProcessBlock(signedBlock *SignedBlock) {
@@ -67,7 +63,7 @@ func (pm *PeerModel) DoLedgerTransaction(transaction *SignedTransaction) {
 	// todo locking
 	pm.ledger.DoTransaction(transaction)
 
-	pm.hasExecutedTransaction[transaction.ID] = true
+	pm.cache.hasExecutedTransaction[transaction.ID] = true
 	// delete transaction from waiting list
 	_, exists := pm.waitingTransactions[transaction.ID]
 	if exists {
@@ -88,7 +84,7 @@ func (pm *PeerModel) UndoLedgerTransaction(transaction *SignedTransaction) {
 	// todo locking
 	pm.ledger.UndoTransaction(transaction)
 
-	pm.hasExecutedTransaction[transaction.ID] = false
+	pm.cache.hasExecutedTransaction[transaction.ID] = false
 	pm.waitingTransactions[transaction.ID] = transaction
 }
 

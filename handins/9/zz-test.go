@@ -41,7 +41,9 @@ func GetEncoder(id int, stdinReader *bufio.Reader) *net.Conn {
 func SetupAccounts(c *net.Conn, accounts []Account) {
 	for _, account := range accounts {
 		accountId, _ := json.Marshal(account.PK.PublicKey)
-		dto := MakeAccountSetupDto(AccountSetup{AccountId: string(accountId), Amount: account.amount})
+		dto := MakeAccountSetupDto(
+			&AccountSetup{AccountId: string(accountId), Amount: account.amount},
+		)
 		SendJson(c, dto)
 		// sleep otherwise the json encoder on the other side will break
 		time.Sleep(50 * time.Millisecond)
