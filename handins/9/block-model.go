@@ -1,6 +1,9 @@
 package main
 
-import "sync"
+import (
+	"math/big"
+	"sync"
+)
 
 type Draw struct {
 	Slot      int
@@ -15,6 +18,7 @@ type SignedBlock struct {
 type Block struct {
 	Hash              string
 	Epoch             int
+	CreatorAccount    string
 	PreviousBlockHash string
 	Transactions      []SignedTransaction
 	NextBlocksHashes  []string
@@ -30,6 +34,10 @@ type GenesisBlock struct {
 type BlockChain struct {
 	Blocks       map[string]*Block
 	GenesisBlock GenesisBlock
+
+	Hardness          *big.Int
+	Seed              int
+	SlotLengthSeconds int
 
 	lock sync.Mutex
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/rsa"
 	"net"
 	"sync"
 )
@@ -40,4 +41,6 @@ type PeerModel struct {
 
 	// transactions to be put into block, if not seen
 	waitingTransactions map[string]*SignedTransaction
+
+	peerKey *rsa.PrivateKey
 }

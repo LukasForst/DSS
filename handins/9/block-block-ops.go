@@ -22,6 +22,10 @@ func (b *Block) GetLongestChainLeaf(bc *BlockChain, currentDepth int) (int, stri
 }
 
 func (b *Block) ComputeBase64Hash() string {
+	return ToBase64(b.ComputeHash())
+}
+
+func (b *Block) ComputeHash() []byte {
 	hash := sha256.New()
 
 	WriteStringToHashSafe(&hash, b.PreviousBlockHash)
@@ -33,8 +37,9 @@ func (b *Block) ComputeBase64Hash() string {
 	for _, nextBlock := range b.NextBlocksHashes {
 		WriteStringToHashSafe(&hash, nextBlock)
 	}
+	WriteStringToHashSafe(&hash, b.CreatorAccount)
 
-	return ToBase64(hash.Sum(nil))
+	return hash.Sum(nil)
 }
 
 func (b *Block) VerifyHash(hashToVerify string) bool {

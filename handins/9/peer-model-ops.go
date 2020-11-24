@@ -59,6 +59,8 @@ func (pm *PeerModel) DoBlocksTransactions(block *Block) {
 	}
 	// set ledger identification
 	pm.ledgerBlockId = block.Hash
+	// reward for the block
+	pm.ledger.Accounts[block.CreatorAccount] += len(block.Transactions) + 10
 }
 
 func (pm *PeerModel) DoLedgerTransaction(transaction *SignedTransaction) {
@@ -80,6 +82,8 @@ func (pm *PeerModel) UndoBlocksTransactions(blockToUndo *Block) {
 	}
 	// set ledger identification
 	pm.ledgerBlockId = blockToUndo.PreviousBlockHash
+	// reward for the block
+	pm.ledger.Accounts[blockToUndo.CreatorAccount] -= len(blockToUndo.Transactions) + 10
 }
 
 func (pm *PeerModel) UndoLedgerTransaction(transaction *SignedTransaction) {
@@ -101,10 +105,10 @@ func (pm *PeerModel) CreateAndExecuteBlock() *Block {
 	// todo determine epoch
 	block := Block{
 		Hash:              "",
-		Epoch:             0,
 		PreviousBlockHash: previousBlock,
 		Transactions:      transactionsInBlock,
 		NextBlocksHashes:  make([]string, 0, 0),
+		CreatorAccount:    FromRsaPubToAccount(&pm.peerKey.PublicKey),
 	}
 	// compute hash ~= id of the block
 	block.Hash = block.ComputeBase64Hash()
