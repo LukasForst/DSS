@@ -15,6 +15,15 @@ func FromRsaPubToAccount(key *rsa.PublicKey) string {
 	return string(res)
 }
 
+func FromAccountToRsaPub(account string) *rsa.PublicKey {
+	var pk rsa.PublicKey
+	err := json.Unmarshal([]byte(account), &pk)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return &pk
+}
+
 func (l *PeerLedger) DoTransaction(t *SignedTransaction) {
 	l.lock.Lock()
 	defer l.lock.Unlock()

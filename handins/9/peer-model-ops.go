@@ -1,5 +1,7 @@
 package main
 
+import "math/big"
+
 func (pm *PeerModel) GetBlock(blockId string) *Block {
 	return pm.blockChain.Blocks[blockId]
 }
@@ -19,6 +21,17 @@ func (pm *PeerModel) QueueTransactionIfNew(transaction *SignedTransaction) {
 func (pm *PeerModel) ProcessBlock(signedBlock *SignedBlock) {
 	// todo some locking
 
+	won := VerifyWon(
+		&signedBlock.Draw,
+		pm.blockChain.Seed,
+		big.NewInt(int64(pm.ledger.Accounts[signedBlock.Block.CreatorAccount])),
+		pm.blockChain.Hardness,
+		FromAccountToRsaPub(signedBlock.Block.CreatorAccount))
+
+	if !won {
+		PrintStatus("Wrong block! Sender didn't win.")
+		return
+	}
 	// todo verify signature
 	// todo verify whether we actually can append the block
 	// -> simulate whole flow and see
@@ -102,7 +115,6 @@ func (pm *PeerModel) CreateAndExecuteBlock() *Block {
 	}
 
 	_, previousBlock := pm.blockChain.GetLongestChainLeaf()
-	// todo determine epoch
 	block := Block{
 		Hash:              "",
 		PreviousBlockHash: previousBlock,

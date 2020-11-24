@@ -12,6 +12,7 @@ type Draw struct {
 
 type SignedBlock struct {
 	Block     Block
+	Draw      Draw
 	Signature string
 }
 

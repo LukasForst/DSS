@@ -27,7 +27,7 @@ func StartLotteryProcess(model *PeerModel) {
 
 		// won lottery
 		if draw != nil {
-			signedBlock := model.BuildAndExecuteSignedBlock()
+			signedBlock := model.BuildAndExecuteSignedBlock(draw)
 			transactionsCount := len(signedBlock.Block.Transactions)
 			// reward for the block
 			model.ledger.Accounts[peerAccountId] += transactionsCount + 10
@@ -40,7 +40,7 @@ func StartLotteryProcess(model *PeerModel) {
 	}
 }
 
-func (pm *PeerModel) BuildAndExecuteSignedBlock() *SignedBlock {
+func (pm *PeerModel) BuildAndExecuteSignedBlock(draw *Draw) *SignedBlock {
 	block := pm.CreateAndExecuteBlock()
 	blockHash := block.ComputeHash()
 
@@ -49,7 +49,7 @@ func (pm *PeerModel) BuildAndExecuteSignedBlock() *SignedBlock {
 		log.Fatal(err)
 	}
 
-	return &SignedBlock{Block: *block, Signature: ToBase64(signature)}
+	return &SignedBlock{Block: *block, Draw: *draw, Signature: ToBase64(signature)}
 }
 
 func (bc *BlockChain) GetSlotNumber() int {
