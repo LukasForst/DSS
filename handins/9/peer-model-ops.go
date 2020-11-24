@@ -23,6 +23,8 @@ func (pm *PeerModel) QueueTransactionIfNew(transaction *SignedTransaction) {
 
 func (pm *PeerModel) ProcessBlock(signedBlock *SignedBlock) {
 	// todo some locking
+	pm.lock.Lock()
+	defer pm.lock.Unlock()
 
 	won := VerifyWon(
 		&signedBlock.Draw,
