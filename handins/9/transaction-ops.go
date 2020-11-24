@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-func (t *SignedTransaction) ComputeHash() []byte {
+func (t *SignedTransaction) ComputeBase64Hash() string {
 	msgHash := sha256.New()
 
 	WriteStringToHashSafe(&msgHash, t.ID)
@@ -19,11 +19,11 @@ func (t *SignedTransaction) ComputeHash() []byte {
 	// intentionally hashing int as a string
 	WriteStringToHashSafe(&msgHash, strconv.Itoa(t.Amount))
 	msgHashSum := msgHash.Sum(nil)
-	return msgHashSum
+	return ToBase64(msgHashSum)
 }
 
 func (t *SignedTransaction) ComputeAndSetSignature(key *rsa.PrivateKey) {
-	transactionHash := t.ComputeHash()
+	transactionHash := FromBase64(t.ComputeBase64Hash())
 	signature, err := rsa.SignPSS(rand.Reader, key, crypto.SHA256, transactionHash, nil)
 	if err != nil {
 		panic(err)
@@ -33,7 +33,7 @@ func (t *SignedTransaction) ComputeAndSetSignature(key *rsa.PrivateKey) {
 }
 
 func (t *SignedTransaction) IsSignatureCorrect() bool {
-	transactionHash := t.ComputeHash()
+	transactionHash := FromBase64(t.ComputeBase64Hash())
 	// get public key of the from
 	var fromPk rsa.PublicKey
 	if err := json.Unmarshal([]byte(t.From), &fromPk); err != nil {

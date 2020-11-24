@@ -1,11 +1,24 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"hash"
 	"log"
 	"net"
 )
+
+func ToBase64(bytes []byte) string {
+	return base64.StdEncoding.EncodeToString(bytes)
+}
+
+func FromBase64(data string) []byte {
+	bytes, err := base64.StdEncoding.DecodeString(data)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return bytes
+}
 
 func WriteStringToHashSafe(h *hash.Hash, str string) {
 	WriteBytesToHashSafe(h, []byte(str))

@@ -96,8 +96,10 @@ func (pm *PeerModel) CreateAndExecuteBlock() *Block {
 	}
 
 	_, previousBlock := pm.blockChain.GetLongestChainLeaf()
+	// todo determine epoch
 	block := Block{
 		Hash:              "",
+		Epoch:             0,
 		PreviousBlockHash: previousBlock,
 		Transactions:      transactionsInBlock,
 		NextBlocksHashes:  make([]string, 0, 0),

@@ -9,6 +9,7 @@ type SignedBlock struct {
 
 type Block struct {
 	Hash              string
+	Epoch             int
 	PreviousBlockHash string
 	Transactions      []SignedTransaction
 	NextBlocksHashes  []string

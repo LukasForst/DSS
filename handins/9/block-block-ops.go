@@ -2,7 +2,7 @@ package main
 
 import (
 	"crypto/sha256"
-	"encoding/base64"
+	"strconv"
 )
 
 func (b *Block) GetLongestChainLeaf(bc *BlockChain, currentDepth int) (int, string) {
@@ -25,15 +25,16 @@ func (b *Block) ComputeBase64Hash() string {
 	hash := sha256.New()
 
 	WriteStringToHashSafe(&hash, b.PreviousBlockHash)
+	WriteStringToHashSafe(&hash, strconv.Itoa(b.Epoch))
 	for _, transaction := range b.Transactions {
-		WriteBytesToHashSafe(&hash, transaction.ComputeHash())
+		WriteStringToHashSafe(&hash, transaction.ComputeBase64Hash())
 		WriteStringToHashSafe(&hash, transaction.Signature)
 	}
 	for _, nextBlock := range b.NextBlocksHashes {
 		WriteStringToHashSafe(&hash, nextBlock)
 	}
 
-	return base64.StdEncoding.EncodeToString(hash.Sum(nil))
+	return ToBase64(hash.Sum(nil))
 }
 
 func (b *Block) VerifyHash(hashToVerify string) bool {
