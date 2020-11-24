@@ -1,20 +1,11 @@
 package main
 
-import (
-	cryptoRand "crypto/rand"
-	"crypto/rsa"
-	"fmt"
-	"log"
-	"strconv"
-)
-
 func main() {
-	privateKey, _ := rsa.GenerateKey(cryptoRand.Reader, 2048)
-	for i := 0; i < 1000; i++ {
-		draw := GenerateSignedDraw(i, privateKey)
-		if len(draw.Signature) != 256 {
-			log.Fatal("Its: " + strconv.Itoa(len(draw.Signature)))
-		}
-	}
-	fmt.Println("hellow world")
+	storedData := "zz-init-data.json"
+	//GenerateAndDump(5, "zz-init-data.json")
+	accs := LoadFromFile(storedData)
+
+	// todo run 5 of them with different private keys and send them some data
+	model := InitModel(&accs.PrivateKeys[0], &accs)
+	StartupServer(model)
 }

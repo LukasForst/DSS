@@ -33,7 +33,7 @@ type GenesisBlock struct {
 }
 
 type BlockChain struct {
-	Blocks       map[string]*Block
+	Blocks       map[string]Block
 	GenesisBlock GenesisBlock
 
 	Hardness          *big.Int

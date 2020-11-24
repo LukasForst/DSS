@@ -5,7 +5,8 @@ import (
 )
 
 func (pm *PeerModel) GetBlock(blockId string) *Block {
-	return pm.blockChain.Blocks[blockId]
+	block := pm.blockChain.Blocks[blockId]
+	return &block
 }
 
 // returns true if the transaction should be broadcast

@@ -81,6 +81,11 @@ func (n *Network) AddNetworkPeers(addresses []string) {
 	}
 }
 
+func (n *Network) RegisterMyIp(ip string) {
+	n.AddNetworkPeer(ip)
+	n.myIpPort = ip
+}
+
 // return array of all peers that are in the sorted list behind
 // current instance
 func (n *Network) SelectTopNAfterMe(size int) []string {

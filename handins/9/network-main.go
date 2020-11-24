@@ -36,7 +36,7 @@ func RunServer(model *PeerModel) {
 	PrintStatus("Listening for connections on IP:port " + ipAndPort)
 
 	// register my own address in the address book
-	model.network.myIpPort = ipAndPort
+	model.network.RegisterMyIp(ipAndPort)
 	// connect to neighborhood
 	ConnectToNeighborhood(model)
 	// broadcast presence
