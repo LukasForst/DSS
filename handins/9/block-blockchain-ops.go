@@ -10,8 +10,10 @@ func (bc *BlockChain) AppendBlock(block *Block) {
 
 	bc.Blocks[block.Hash] = block
 	// todo what if that one does not exist?
+	previousBlock := bc.Blocks[block.PreviousBlockHash]
+
 	if block.PreviousBlockHash != "" {
-		previousBlock := bc.Blocks[block.PreviousBlockHash]
+		previousBlock.NextBlocksHashes = append(previousBlock.NextBlocksHashes, previousBlock.Hash)
 	} else {
 		PrintStatus("The previous block hash is empty!")
 	}
