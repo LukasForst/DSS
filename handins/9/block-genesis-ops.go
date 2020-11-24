@@ -37,6 +37,7 @@ func (g *GenesisBlock) GetLongestChainLeaf(bc *BlockChain) (int, string) {
 	for _, hash := range g.NextBlocksHashes {
 		block := bc.Blocks[hash]
 		depth, foundHash := block.GetLongestChainLeaf(bc, currentMaxDepth+1)
+		// todo add comparisson if two are correct
 		if depth > currentMaxDepth {
 			currentMaxDepth = depth
 			currentMaxHash = foundHash

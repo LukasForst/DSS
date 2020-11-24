@@ -1,9 +1,5 @@
 package main
 
-func (bc *BlockChain) GetLongestChainLeaf() (int, string) {
-	return bc.GenesisBlock.GetLongestChainLeaf(bc)
-}
-
 func (b *Block) GetLongestChainLeaf(bc *BlockChain, currentDepth int) (int, string) {
 	currentMaxDepth := currentDepth
 	currentMaxHash := b.Hash

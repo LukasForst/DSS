@@ -1,5 +1,7 @@
 package main
 
+import "sync"
+
 type SignedBlock struct {
 	Block     Block
 	Signature []byte
@@ -8,7 +10,7 @@ type SignedBlock struct {
 type Block struct {
 	Hash              string
 	PreviousBlockHash string
-	Transactions      []string
+	Transactions      []SignedTransaction
 	NextBlocksHashes  []string
 }
 
@@ -20,9 +22,8 @@ type GenesisBlock struct {
 }
 
 type BlockChain struct {
-	Blocks       map[string]Block
+	Blocks       map[string]*Block
 	GenesisBlock GenesisBlock
-}
 
-type Chain struct {
+	lock sync.Mutex
 }
