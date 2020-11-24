@@ -43,4 +43,6 @@ type PeerModel struct {
 	waitingTransactions map[string]*SignedTransaction
 
 	peerKey *rsa.PrivateKey
+
+	lock sync.Mutex
 }

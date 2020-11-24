@@ -1,6 +1,8 @@
 package main
 
-import "math/big"
+import (
+	"math/big"
+)
 
 func (pm *PeerModel) GetBlock(blockId string) *Block {
 	return pm.blockChain.Blocks[blockId]
@@ -77,7 +79,9 @@ func (pm *PeerModel) DoBlocksTransactions(block *Block) {
 }
 
 func (pm *PeerModel) DoLedgerTransaction(transaction *SignedTransaction) {
-	// todo locking
+	pm.lock.Lock()
+	defer pm.lock.Unlock()
+
 	pm.ledger.DoTransaction(transaction)
 
 	pm.cache.hasExecutedTransaction[transaction.ID] = true
@@ -100,7 +104,9 @@ func (pm *PeerModel) UndoBlocksTransactions(blockToUndo *Block) {
 }
 
 func (pm *PeerModel) UndoLedgerTransaction(transaction *SignedTransaction) {
-	// todo locking
+	pm.lock.Lock()
+	defer pm.lock.Unlock()
+
 	pm.ledger.UndoTransaction(transaction)
 
 	pm.cache.hasExecutedTransaction[transaction.ID] = false
@@ -108,7 +114,9 @@ func (pm *PeerModel) UndoLedgerTransaction(transaction *SignedTransaction) {
 }
 
 func (pm *PeerModel) CreateAndExecuteBlock() *Block {
-	// todo locking
+	pm.lock.Lock()
+	defer pm.lock.Unlock()
+
 	transactionsInBlock := make([]SignedTransaction, 0, 0)
 	for _, transaction := range pm.waitingTransactions {
 		transactionsInBlock = append(transactionsInBlock, *transaction)
