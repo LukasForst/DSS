@@ -28,7 +28,8 @@ type Network struct {
 }
 
 type PeerModel struct {
-	network    *Network
+	network *Network
+
 	blockChain *BlockChain
 
 	ledger *PeerLedger

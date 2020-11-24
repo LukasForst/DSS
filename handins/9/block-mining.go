@@ -23,7 +23,7 @@ func VerifyWon(
 	return DidWin(draw, tickets, hardness)
 }
 
-// returns byte array if won, nil otherwise
+// returns draw if won, nil otherwise
 func RunLottery(
 	slot int,
 	tickets *big.Int,
@@ -52,9 +52,9 @@ func DidWin(
 	return res.Cmp(hardness) >= 0
 }
 
-// produces signature of 256 bytes
 func GenerateSignedDraw(slot int, key *rsa.PrivateKey) Draw {
 	drawHash := GenerateDrawHash(slot)
+	// produces signature of 256 bytes
 	signature, err := rsa.SignPSS(rand.Reader, key, crypto.SHA256, drawHash, nil)
 	if err != nil {
 		log.Fatal(err)

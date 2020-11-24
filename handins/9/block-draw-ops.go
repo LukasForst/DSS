@@ -7,7 +7,7 @@ import (
 
 func (d *Draw) ComputeHash() []byte {
 	hash := sha256.New()
-	WriteStringToHashSafe(&hash, "lottery"+strconv.FormatInt(d.Slot, 10))
+	WriteStringToHashSafe(&hash, "lottery"+strconv.Itoa(d.Slot))
 	return hash.Sum(nil)
 }
 
