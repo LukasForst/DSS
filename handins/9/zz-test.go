@@ -105,18 +105,17 @@ func StartTest() {
 	SetupAccounts(peer1, accounts)
 	SetupAccounts(peer2, accounts)
 
-	PrintStatus("Pres enter to start the execution.")
+	PrintStatus("Press enter to start the execution.")
 	_, _ = stdinReader.ReadString('\n')
 
 	go StartExecution(true, testId, &A, &B, peer1)
 	go StartExecution(false, testId, &A, &C, peer2)
 
 	// manually check how do the amounts look like
-	PrintStatus("Pres enter to end the execution.")
+	PrintStatus("Press enter to end the execution.")
 	_, _ = stdinReader.ReadString('\n')
 }
 
-//
-//func main() {
-//	StartTest()
-//}
+// func main() {
+// 	StartTest()
+// }
