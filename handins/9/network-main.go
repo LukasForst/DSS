@@ -42,6 +42,9 @@ func RunServer(model *PeerModel) {
 	// broadcast presence
 	go model.network.BroadCastJson(MakePresent(ipAndPort))
 
+	// start lottery
+	go StartLotteryProcess(model)
+
 	// listen
 	for {
 		conn, err := ln.Accept()
@@ -74,10 +77,7 @@ func InitialConnection(conn net.Conn, model *PeerModel) {
 	_ = conn.Close()
 }
 
-func StartupServer() {
-	// todo initialize model
-	model := PeerModel{}
-
+func StartupServer(model PeerModel) {
 	PrintStatus("Enter IP address and the port of the peer.")
 	stdinReader := bufio.NewReader(os.Stdin)
 	ipPort, _ := stdinReader.ReadString('\n')

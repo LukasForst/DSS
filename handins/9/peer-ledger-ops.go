@@ -1,6 +1,28 @@
 package main
 
-import "fmt"
+import (
+	"crypto/rsa"
+	"encoding/json"
+	"fmt"
+	"log"
+)
+
+func FromRsaPubToAccount(key *rsa.PublicKey) string {
+	res, err := json.Marshal(key)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(res)
+}
+
+func FromAccountToRsaPub(account string) *rsa.PublicKey {
+	var pk rsa.PublicKey
+	err := json.Unmarshal([]byte(account), &pk)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return &pk
+}
 
 func (l *PeerLedger) DoTransaction(t *SignedTransaction) {
 	l.lock.Lock()

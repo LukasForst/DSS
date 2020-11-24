@@ -10,11 +10,12 @@ import (
 
 func VerifyWon(
 	draw *Draw,
+	seed int,
 	tickets *big.Int,
 	hardness *big.Int,
 	key *rsa.PublicKey,
 ) bool {
-	drawHash := draw.ComputeHash()
+	drawHash := draw.ComputeHash(seed)
 	err := rsa.VerifyPSS(key, crypto.SHA256, drawHash, draw.Signature, nil)
 	if err != nil {
 		return false
@@ -26,11 +27,12 @@ func VerifyWon(
 // returns draw if won, nil otherwise
 func RunLottery(
 	slot int,
+	seed int,
 	tickets *big.Int,
 	hardness *big.Int,
 	key *rsa.PrivateKey,
 ) *Draw {
-	draw := GenerateSignedDraw(slot, key)
+	draw := GenerateSignedDraw(slot, seed, key)
 	if DidWin(&draw, tickets, hardness) {
 		return &draw
 	}
@@ -52,8 +54,8 @@ func DidWin(
 	return res.Cmp(hardness) >= 0
 }
 
-func GenerateSignedDraw(slot int, key *rsa.PrivateKey) Draw {
-	drawHash := GenerateDrawHash(slot)
+func GenerateSignedDraw(slot int, seed int, key *rsa.PrivateKey) Draw {
+	drawHash := GenerateDrawHash(slot, seed)
 	// produces signature of 256 bytes
 	signature, err := rsa.SignPSS(rand.Reader, key, crypto.SHA256, drawHash, nil)
 	if err != nil {
