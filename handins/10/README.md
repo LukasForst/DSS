@@ -13,7 +13,7 @@ for the first sent packet. He responds with his own certificate, however this wi
 Since the adversary controls the whole connection and network, and the URL is not present in the certificate, the browser has no possibility of successfully solving the above issue.
 
 ## Question 3
-To construct an AKE protocol π satisfying definition D from an AKE protocol π' that satisfies D', one can run protocoö π' first, and then use the output identity as an input to run the protocol π afterwards. Then definition D will be satisfied.
+To construct an AKE protocol π satisfying definition _D_ from an AKE protocol π' that satisfies _D'_, one can run protocol π' first, and then use the output identity as an input to run the protocol π afterwards. Then definition _D_ will be satisfied.
 
-The TLS AKE without URL check satisfies the definition D', since this protocol takes no identity as input. Meanwhile, the protocol D takes the identity ad input, and would therefore be equivalent to a TLS AKE with URL check.
+The TLS AKE without URL check satisfies the definition _D'_, since this protocol takes no identity as input. Meanwhile, the protocol _D_ takes the identity ad input, and would therefore be equivalent to a TLS AKE with URL check.
 
