@@ -7,7 +7,7 @@ ___
 ## Security policy
 
 This security policy gives the security objectives to protect the voting system of _Danmarksdebatten_.
-The system should satisfy the following security ocjectives:
+The system should satisfy the following security objectives:
 
 * A user is qualified to vote if he is user of the public digital signature system and satisfies the demands the vote creator requests.
 * Only qualified voters can participate in a vote.
