@@ -4,21 +4,12 @@ ___
 * Github Repository - [LukasForst/DSS](https://github.com/LukasForst/DSS/tree/master/handins/)
 ___
 
-## Security policy
+Note about the following text - we didn't really understand why they are talking about the statistical data, because they're not part of the original assignment/specification.
 
+## Security policy
 This security policy gives the security objectives to protect the voting system of _Danmarksdebatten_.
 The system should satisfy the following security objectives:
 
-* A user is qualified to vote if he is user of the public digital signature system and satisfies the demands the vote creator requests.
-* Only qualified voters can participate in a vote.
-* Voting is possible for all qualified users once until the voting deadline ends.
-* After voting users can see the tally of votes so far.
-* Only the final result must be published.
-* Each voters individual vote has to be kept secret.
-* Anonymized data collection of demographical and statistical data can be performed.
-
-## Solution
-- The following security policies aim to protect and specify the voting system for the _Danmarksdebatten_ web.
 - In order to ensure only eligible votes, the vote is qualified to vote in a poll if he/she fullfils the following properties.
     1. A voter is a user of the public digital signature system in order to ensure the authenticity and the non-repudiation of the votes.
     2. A voter satisfies all extra demands defined by the party who sets up the vote.
