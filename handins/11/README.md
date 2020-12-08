@@ -17,3 +17,5 @@ The system should satisfy the following security objectives:
 * Each voters individual vote has to be kept secret.
 * Anonymized data collection of demographical and statistical data can be performed.
 
+## Solution
+- The following security policies aim to protect and specify the voting system for the _Danmarksdebatten_ web.
