@@ -22,5 +22,6 @@ The system should satisfy the following security objectives:
 - In order to ensure only eligible votes, the vote is qualified to vote in a poll if he/she fullfils the following properties.
     1. A voter is a user of the public digital signature system.
     2. A voter satisfies all extra demands defined by the party who sets up the vote.
-- In order to ensure the validity of the votes and the integrity of the system, the voters can cast votes only during the period, when the poll is opened.
+- In order to ensure the validity of the votes and the integrity of the system, the voters can cast votes only during the period, when the poll is opened (meaning, after the poll was created until the poll's deadline).
 - In order to ensure the authenticity for the votes, the voter can cast only one vote per poll. Thus, once a voter voted, he/she can't vote in the same poll anymore.
+- The partial results, nor the votes themselves, are not public, when the poll is opened (meaning, after the poll was created until the poll's deadline). This security policy ensures that the votes are genuine and unbiased by the partial results.
