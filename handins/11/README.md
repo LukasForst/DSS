@@ -20,5 +20,5 @@ The system should satisfy the following security objectives:
 ## Solution
 - The following security policies aim to protect and specify the voting system for the _Danmarksdebatten_ web.
 - In order to ensure only eligible votes, the user is qualified to vote in a poll if he/she fullfils the following properties.
-1. A user is part of the public digital signature system.
-2. A user satisfies all extra demands defined by the party who sets up the vote. 
+    1. A user is part of the public digital signature system.
+    2. A user satisfies all extra demands defined by the party who sets up the vote. 
